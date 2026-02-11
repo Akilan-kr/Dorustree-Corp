@@ -1,19 +1,18 @@
-package com.example.dorustree_corp.Model;
+package com.example.dorustree_corp.Model.MySql;
 
-import com.fasterxml.jackson.annotation.JsonTypeId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
+@Data
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long productId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
+    @SequenceGenerator(name = "product_seq", sequenceName = "product_sequence", initialValue = 1000, allocationSize = 1)
+    private Long productId;
     @NotNull(message = "Product name cannot be null")
     private String productName;
     @NotNull(message = "Product category cannot be null")
@@ -22,13 +21,15 @@ public class Product {
     private Integer productPrice;
     @NotNull(message = "Product Quantity cannot be null")
     private Integer productQuantity;
-    private boolean productStatus;
+    private Boolean productStatus = false;
 
-    public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, boolean productStatus) {
+    public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, Boolean productStatus) {
         this.productName = productName;
         this.productCategory = productCategory;
         this.productPrice = productPrice;
         this.productQuantity = productQuantity;
-        this.productStatus = productStatus;
+        if (productStatus != null && productQuantity != 0) {
+            this.productStatus = productStatus;
+        }
     }
 }

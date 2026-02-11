@@ -1,8 +1,20 @@
 package com.example.dorustree_corp.Service;
 
-import com.example.dorustree_corp.Model.Product;
+import com.example.dorustree_corp.Model.MySql.Product;
+
+import java.util.List;
 
 public interface ProductService {
     void addProduct(Product product);
+
+    Product getProductById(Long id);
+
+    List<Product> getAllProducts();
+
+    List<Product> getAllProductsByCategory(String productCategory);
+
+    void updateProduct(Product product);
+
+    void deleteProductById(Long id);
 }
 

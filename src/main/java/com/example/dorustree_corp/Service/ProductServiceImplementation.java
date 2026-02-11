@@ -1,9 +1,11 @@
 package com.example.dorustree_corp.Service;
 
-import com.example.dorustree_corp.Model.Product;
-import com.example.dorustree_corp.Repository.ProductRepository;
+import com.example.dorustree_corp.Model.MySql.Product;
+import com.example.dorustree_corp.Repository.MySql.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ProductServiceImplementation implements ProductService{
@@ -19,4 +21,31 @@ public class ProductServiceImplementation implements ProductService{
     public void addProduct(Product product) {
         productRepository.save(product);
     }
+
+    @Override
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).orElse(new Product());
+    }
+
+    @Override
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    @Override
+    public List<Product> getAllProductsByCategory(String productCategory) {
+        return productRepository.findAllByProductCategory(productCategory);
+    }
+
+    @Override
+    public void updateProduct(Product product) {
+        productRepository.save(product);
+    }
+
+    @Override
+    public void deleteProductById(Long id) {
+        productRepository.deleteById(id);
+    }
+
+
 }
