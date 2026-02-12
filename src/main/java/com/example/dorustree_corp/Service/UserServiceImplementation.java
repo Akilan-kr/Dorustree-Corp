@@ -1,11 +1,16 @@
 package com.example.dorustree_corp.Service;
 
-import com.example.dorustree_corp.Model.MongoDb.User;
+import com.example.dorustree_corp.Model.MongoDb.UserData;
 import com.example.dorustree_corp.Repository.MongoDb.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServiceImplementation implements UserService{
@@ -19,22 +24,23 @@ public class UserServiceImplementation implements UserService{
 
 
     @Override
-    public void addUser(User user) {
-         userRepository.save(user);
+    public void addUser(UserData userData) {
+         userRepository.save(userData);
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<UserData> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findByUserId(id).orElse(new User(1L,"name","email","password","role","userAddress","123345"));
+    public UserData getUserById(String id) {
+        return userRepository.findById(id).orElse(new UserData("id","name","email","password", "ADMIN","userAddress","123345"));
     }
 
     @Override
-    public void updateUser(User user) {
-        userRepository.save(user);
+    public void updateUser(UserData userData) {
+        userRepository.save(userData);
     }
+
 }

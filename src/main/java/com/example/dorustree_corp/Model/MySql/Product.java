@@ -1,9 +1,13 @@
 package com.example.dorustree_corp.Model.MySql;
 
+import com.example.dorustree_corp.Exceptions.ProductValidationException;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.ResponseEntity;
 
 @Entity
 @NoArgsConstructor
@@ -13,23 +17,27 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
     @SequenceGenerator(name = "product_seq", sequenceName = "product_sequence", initialValue = 1000, allocationSize = 1)
     private Long productId;
-    @NotNull(message = "Product name cannot be null")
+    @NotBlank(message = "Product name cannot be null or empty")
     private String productName;
-    @NotNull(message = "Product category cannot be null")
+    @NotBlank(message = "Product category cannot be null or empty")
     private String productCategory;
-    @NotNull(message = "Product price cannot be null")
     private Integer productPrice;
-    @NotNull(message = "Product Quantity cannot be null")
-    private Integer productQuantity;
+    private Integer productQuantity = 0;
     private Boolean productStatus = false;
+    private String productVendorId;
+    private String productVendorName;
 
     public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, Boolean productStatus) {
         this.productName = productName;
         this.productCategory = productCategory;
-        this.productPrice = productPrice;
-        this.productQuantity = productQuantity;
-        if (productStatus != null && productQuantity != 0) {
+        if(productPrice > 0)
+            this.productPrice = productPrice;
+        else
+            throw new ProductValidationException("Price must be greater than zero");
+        if(productQuantity > 0)
+            this.productQuantity = productQuantity;
+        if (productStatus != null && productQuantity != 0)
             this.productStatus = productStatus;
-        }
     }
+
 }

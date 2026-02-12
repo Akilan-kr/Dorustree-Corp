@@ -18,8 +18,8 @@ public class ProductServiceImplementation implements ProductService{
     }
 
     @Override
-    public void addProduct(Product product) {
-        productRepository.save(product);
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
     }
 
     @Override
@@ -38,6 +38,11 @@ public class ProductServiceImplementation implements ProductService{
     }
 
     @Override
+    public List<Product> getAllProductsByStatus(Boolean productstatus) {
+        return productRepository.findAllByProductStatus(productstatus);
+    }
+
+    @Override
     public void updateProduct(Product product) {
         productRepository.save(product);
     }
@@ -46,6 +51,8 @@ public class ProductServiceImplementation implements ProductService{
     public void deleteProductById(Long id) {
         productRepository.deleteById(id);
     }
+
+
 
 
 }

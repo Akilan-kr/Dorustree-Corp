@@ -5,7 +5,7 @@ import com.example.dorustree_corp.Model.MySql.Product;
 import java.util.List;
 
 public interface ProductService {
-    void addProduct(Product product);
+    Product addProduct(Product product);
 
     Product getProductById(Long id);
 
@@ -16,5 +16,8 @@ public interface ProductService {
     void updateProduct(Product product);
 
     void deleteProductById(Long id);
+
+    List<Product> getAllProductsByStatus(Boolean productstatus);
+
 }
 

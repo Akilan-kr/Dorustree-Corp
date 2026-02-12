@@ -1,15 +1,17 @@
 package com.example.dorustree_corp.Service;
 
-import com.example.dorustree_corp.Model.MongoDb.User;
+import com.example.dorustree_corp.Model.MongoDb.UserData;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
 public interface UserService {
-    void addUser(User user);
+    void addUser(UserData userData);
 
-    List<User> getAllUsers();
+    List<UserData> getAllUsers();
 
-    User getUserById(Long id);
+    UserData getUserById(String id);
 
-    void updateUser(User user);
+    void updateUser(UserData userData);
+
 }
