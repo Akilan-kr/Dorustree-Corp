@@ -1,14 +1,15 @@
 package com.example.dorustree_corp.Controller;
 
+import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Model.AuthRequest;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
-import com.example.dorustree_corp.Service.Jwt.JwtService;
+import com.example.dorustree_corp.Utils.JwtUtils;
 import com.example.dorustree_corp.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -16,23 +17,22 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userServiceImplementation;
 
     private final AuthenticationManager authenticationManager;
 
-    private final JwtService jwtService;
+    private final JwtUtils jwtUtils;
 
 
 
     @Autowired
-    public UserController(UserService userServiceImplementation, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public UserController(UserService userServiceImplementation, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
         this.userServiceImplementation = userServiceImplementation;
-        this.jwtService = jwtService;
+        this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
-
     }
 
     @PostMapping("/adduser")
@@ -56,15 +56,18 @@ public class UserController {
         userServiceImplementation.updateUser(userData);
         return "updated";
     }
+    @GetMapping("/getalluserbystatus/{userrole}")
+    public List<UserData> getAllUserByRoles(@PathVariable UserRoles userrole){
+        return userServiceImplementation.getAllUsersByRole(userrole);
+    }
 
-
-    @PostMapping("/generatetoken")
+    @PostMapping("/login")
     public String authenticateAndGenerateGetToken(@RequestBody AuthRequest authRequest){
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword())
         );
         if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(authRequest.getUserName());
+            return jwtUtils.generateToken(authRequest.getUserName());
         } else {
             throw new UsernameNotFoundException("Invalid user request!");
         }

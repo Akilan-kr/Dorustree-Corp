@@ -1,4 +1,4 @@
-package com.example.dorustree_corp.Service.Jwt;
+package com.example.dorustree_corp.Utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class JwtService {
+public class JwtUtils {
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 

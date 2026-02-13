@@ -42,8 +42,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // Use the CorsConfigurationSource bean below
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/*").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()) // Explicitly register the provider

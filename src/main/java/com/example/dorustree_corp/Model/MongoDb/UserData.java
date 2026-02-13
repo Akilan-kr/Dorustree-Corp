@@ -1,6 +1,8 @@
 package com.example.dorustree_corp.Model.MongoDb;
 
 
+import com.example.dorustree_corp.Enums.UserRoles;
+import com.example.dorustree_corp.Enums.UserStatusForVendor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -29,18 +31,17 @@ public class UserData {
     private String userEmail;
     @NotBlank(message = "UserPassword cannot be null or empty")
     private String userPassword;
-    @NotNull(message = "User role is required. Valid roles are: ADMIN, VENDOR, USER")
-    private String userRole;
+    private UserRoles userRole = UserRoles.Role_User;
+    private UserStatusForVendor userStatusForVendor = UserStatusForVendor.Status_None;
     @NotBlank(message = "userAddress cannot be null or blank")
     private String userAddress;
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
     private String userPhone;
 
-    public UserData(String userName, String userEmail, String userPassword, String userRole, String userAddress, String userPhone) {
+    public UserData(String userName, String userEmail, String userPassword, String userAddress, String userPhone) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPassword = userPassword;
-        this.userRole = userRole;
         this.userAddress = userAddress;
         this.userPhone = userPhone;
     }

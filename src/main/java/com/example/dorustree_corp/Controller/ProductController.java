@@ -1,27 +1,32 @@
 package com.example.dorustree_corp.Controller;
 
 import com.example.dorustree_corp.Model.MySql.Product;
+import com.example.dorustree_corp.Service.ExcelService;
 import com.example.dorustree_corp.Service.ProductService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/product")
 public class ProductController {
 
     Logger logger
             = LoggerFactory.getLogger(ProductController.class);
 
     private final ProductService productServiceImplementation;
+    private final ExcelService excelService;
 
     @Autowired
-    public ProductController(ProductService productServiceImplementation) {
+    public ProductController(ProductService productServiceImplementation, ExcelService excelService) {
         this.productServiceImplementation = productServiceImplementation;
+        this.excelService = excelService;
     }
 
     @PostMapping("/addproduct")
@@ -33,6 +38,18 @@ public class ProductController {
 //        }
         return "Added";
     }
+
+    @PostMapping("/upload-excel")
+    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            List<List<String>> data = excelService.parseExcel(file);
+            System.out.println(data);
+            return ResponseEntity.ok(data);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping("/getproduct/{id}")
     public Product getProductById(@PathVariable Long id ){
