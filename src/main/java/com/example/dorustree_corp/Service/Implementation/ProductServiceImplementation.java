@@ -1,14 +1,15 @@
-package com.example.dorustree_corp.Service;
+package com.example.dorustree_corp.Service.Implementation;
 
 import com.example.dorustree_corp.Model.MySql.Product;
 import com.example.dorustree_corp.Repository.MySql.ProductRepository;
+import com.example.dorustree_corp.Service.Interfaces.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class ProductServiceImplementation implements ProductService{
+public class ProductServiceImplementation implements ProductService {
 
     private final ProductRepository productRepository;
 

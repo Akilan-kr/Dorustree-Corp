@@ -1,22 +1,20 @@
-package com.example.dorustree_corp.Service;
+package com.example.dorustree_corp.Service.Implementation;
 
 import com.example.dorustree_corp.Enums.UserRoles;
-import com.example.dorustree_corp.Enums.UserStatusForVendor;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
 import com.example.dorustree_corp.Repository.MongoDb.UserRepository;
+import com.example.dorustree_corp.Service.Interfaces.AuthenticationFacade;
+import com.example.dorustree_corp.Service.Interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceImplementation implements UserService{
+public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
 

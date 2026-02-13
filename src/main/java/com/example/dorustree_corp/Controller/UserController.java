@@ -4,7 +4,7 @@ import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Model.AuthRequest;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
 import com.example.dorustree_corp.Utils.JwtUtils;
-import com.example.dorustree_corp.Service.UserService;
+import com.example.dorustree_corp.Service.Interfaces.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 

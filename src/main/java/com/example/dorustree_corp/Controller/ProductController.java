@@ -1,8 +1,8 @@
 package com.example.dorustree_corp.Controller;
 
 import com.example.dorustree_corp.Model.MySql.Product;
-import com.example.dorustree_corp.Service.ExcelService;
-import com.example.dorustree_corp.Service.ProductService;
+import com.example.dorustree_corp.Service.Implementation.ExcelService;
+import com.example.dorustree_corp.Service.Interfaces.ProductService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +42,8 @@ public class ProductController {
     @PostMapping("/upload-excel")
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
         try {
-            List<List<String>> data = excelService.parseExcel(file);
-            System.out.println(data);
-            return ResponseEntity.ok(data);
+            excelService.importProducts(file);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

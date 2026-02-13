@@ -1,7 +1,9 @@
-package com.example.dorustree_corp.Service;
+package com.example.dorustree_corp.Service.Implementation;
 
 import com.example.dorustree_corp.Model.MongoDb.CartData;
 import com.example.dorustree_corp.Repository.MongoDb.CartRepository;
+import com.example.dorustree_corp.Service.Interfaces.CartService;
+import com.example.dorustree_corp.Service.Interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,7 @@ import java.util.Optional;
 
 
 @Service
-public class CartServiceImplementation implements CartService{
+public class CartServiceImplementation implements CartService {
 
     private final CartRepository cartRepository;
     private final UserService userService;

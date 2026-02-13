@@ -1,8 +1,7 @@
-package com.example.dorustree_corp.Service;
+package com.example.dorustree_corp.Service.Interfaces;
 
 import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 

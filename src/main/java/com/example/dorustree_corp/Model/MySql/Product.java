@@ -25,7 +25,6 @@ public class Product {
     private Integer productQuantity = 0;
     private Boolean productStatus = false;
     private String productVendorId;
-    private String productVendorName;
 
     public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, Boolean productStatus) {
         this.productName = productName;

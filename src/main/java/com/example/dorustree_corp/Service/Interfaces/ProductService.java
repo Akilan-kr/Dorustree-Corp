@@ -1,4 +1,4 @@
-package com.example.dorustree_corp.Service;
+package com.example.dorustree_corp.Service.Interfaces;
 
 import com.example.dorustree_corp.Model.MySql.Product;
 
