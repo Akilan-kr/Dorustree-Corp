@@ -1,4 +1,4 @@
-package com.example.dorustree_corp.Model;
+package com.example.dorustree_corp.Dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

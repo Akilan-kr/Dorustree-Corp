@@ -3,7 +3,7 @@ package com.example.dorustree_corp.Service.Implementation;
 import com.example.dorustree_corp.Enums.OrderStatus;
 import com.example.dorustree_corp.Model.MongoDb.OrderData;
 import com.example.dorustree_corp.Model.MySql.Product;
-import com.example.dorustree_corp.Model.OrderItems;
+import com.example.dorustree_corp.Dto.OrderItems;
 import com.example.dorustree_corp.Repository.MongoDb.OrderRepository;
 import com.example.dorustree_corp.Service.Interfaces.OrderService;
 import com.example.dorustree_corp.Service.Interfaces.ProductService;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 
 @Service

@@ -33,24 +33,20 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     private static final String[] ADMIN_PATHS = {
-            "/api/cart/**",
-            "/api/order/getA",
-            "/api/system/**"
+
     };
 
     private static final String[] VENDOR_PATHS = {
-            "/api/product/**",
-            "/api/orders/vendor/**"
+
     };
 
     private static final String[] USER_PATHS = {
-            "/api/cart/**",
-            "/api/order/createorder",
-            "/api/orderstatus/**"
+            "/api/cart/**"
     };
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/users/login",
+            "/api/users/adduser",
             "/api/product/getproducts"
     };
 

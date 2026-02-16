@@ -52,30 +52,33 @@ public class ProductController {
         }
     }
 
-
+    @PreAuthorize("hasRole('VENDOR')")
     @GetMapping("/getproduct/{id}")
     public Product getProductById(@PathVariable Long id ){
 
         return productServiceImplementation.getProductById(id);
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'VENDOR')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/getproducts")
     public List<Product> getAllProducts(){
 
         return productServiceImplementation.getAllProducts();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getproducts/{productvendorid}")
     public List<Product> getAllProductsUsingVendorId(@PathVariable String productvendorid){
         return productServiceImplementation.getAllProductsUsingVendorId(productvendorid);
     }
 
+    @PreAuthorize("hasRole('VENDOR')")
     @GetMapping("/getproductsofloginvendor")
     public List<Product> getAllProductForLoginVendor(){
         return productServiceImplementation.getAllProductForLoginVendor();
     }
 
+    @PreAuthorize("hasAnyRole('VENDOR','ADMIN')")
     @GetMapping("/getproductbystatus/{productstatus}")
     public List<Product> getAllProductsByStatus(@PathVariable Boolean productstatus){
         return productServiceImplementation.getAllProductsByStatus(productstatus);
@@ -86,14 +89,14 @@ public class ProductController {
         return productServiceImplementation.getAllProductsByCategory(productCategory);
     }
 
-
-
+    @PreAuthorize("hasRole('VENDOR')")
     @PutMapping("/updateproduct")
-    public String updateProduct(@RequestBody Product product){
+    public String updateProduct(@Valid @RequestBody Product product){
         productServiceImplementation.updateProduct(product);
         return "updated";
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'VENDOR')")
     @DeleteMapping("/deleteproduct/{id}")
     public String deleteProduct(@PathVariable Long id){
         productServiceImplementation.deleteProductById(id);
