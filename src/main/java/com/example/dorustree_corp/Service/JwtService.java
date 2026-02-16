@@ -1,4 +1,4 @@
-package com.example.dorustree_corp.Utils;
+package com.example.dorustree_corp.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -15,8 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-@Component
-public class JwtUtils {
+@Service
+public class JwtService {
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 

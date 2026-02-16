@@ -2,6 +2,7 @@ package com.example.dorustree_corp.Service.Implementation;
 
 import com.example.dorustree_corp.Model.MySql.Product;
 import com.example.dorustree_corp.Repository.MySql.ProductRepository;
+import com.example.dorustree_corp.Service.Interfaces.UserService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -15,13 +16,15 @@ import java.util.List;
 public class ExcelService {
 
         private final ProductRepository productRepository;
+        private final UserService userServiceImplementation;
 
-        public ExcelService(ProductRepository productRepository) {
+        public ExcelService(ProductRepository productRepository, UserService userServiceImplementation) {
             this.productRepository = productRepository;
+            this.userServiceImplementation = userServiceImplementation;
         }
 
         public void importProducts(MultipartFile file) throws IOException {
-
+            String loggingUserId = userServiceImplementation.findByUserId();
             List<Product> batch = new ArrayList<>();
             int batchSize = 500;
 
@@ -47,7 +50,7 @@ public class ExcelService {
                                 Integer.parseInt(formatter.formatCellValue(row.getCell(3)))
                         );
                         product.setProductStatus(Boolean.valueOf(formatter.formatCellValue(row.getCell(4))));
-
+                        product.setProductVendorId(loggingUserId);
                         batch.add(product);
 
                         // Save in batches

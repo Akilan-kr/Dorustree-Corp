@@ -1,6 +1,6 @@
 package com.example.dorustree_corp.Filter;
 
-import com.example.dorustree_corp.Utils.JwtUtils;
+import com.example.dorustree_corp.Service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,11 +20,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
-    private final JwtUtils jwtUtils;
+    private final JwtService jwtService;
     @Autowired
-    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtUtils jwtUtils) {
+    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtService jwtService) {
         this.userDetailsService = userDetailsService;
-        this.jwtUtils = jwtUtils;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -35,12 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtils.extractUsername(token);
+            username = jwtService.extractUsername(token);
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtils.validateToken(token, userDetails)) {
+            if (jwtService.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,

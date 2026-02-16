@@ -19,5 +19,10 @@ public interface ProductService {
 
     List<Product> getAllProductsByStatus(Boolean productstatus);
 
+    List<Product> getAllProductsUsingVendorId(String productvendorid);
+
+    List<Product> getAllProductForLoginVendor();
+
+    Integer getProductPrice(String id);
 }
 

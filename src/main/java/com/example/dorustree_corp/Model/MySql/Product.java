@@ -24,6 +24,7 @@ public class Product {
     private Integer productPrice;
     private Integer productQuantity = 0;
     private Boolean productStatus = false;
+    private Boolean productDeleteStatus = false;
     private String productVendorId;
 
     public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, Boolean productStatus) {

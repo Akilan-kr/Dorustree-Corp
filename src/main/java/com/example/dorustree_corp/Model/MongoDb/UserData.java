@@ -31,7 +31,7 @@ public class UserData {
     private String userEmail;
     @NotBlank(message = "UserPassword cannot be null or empty")
     private String userPassword;
-    private UserRoles userRole = UserRoles.Role_User;
+    private UserRoles userRole = UserRoles.USER;
     private UserStatusForVendor userStatusForVendor = UserStatusForVendor.Status_None;
     @NotBlank(message = "userAddress cannot be null or blank")
     private String userAddress;

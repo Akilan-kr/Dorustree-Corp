@@ -3,6 +3,7 @@ package com.example.dorustree_corp.Service.Implementation;
 import com.example.dorustree_corp.Model.MySql.Product;
 import com.example.dorustree_corp.Repository.MySql.ProductRepository;
 import com.example.dorustree_corp.Service.Interfaces.ProductService;
+import com.example.dorustree_corp.Service.Interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,15 +14,20 @@ public class ProductServiceImplementation implements ProductService {
 
     private final ProductRepository productRepository;
 
+    private final UserService userServiceImplementation;
+
 
 
     @Autowired
-    public ProductServiceImplementation(ProductRepository productRepository){
+    public ProductServiceImplementation(ProductRepository productRepository, UserService userServiceImplementation){
         this.productRepository = productRepository;
+        this.userServiceImplementation = userServiceImplementation;
     }
 
     @Override
     public Product addProduct(Product product) {
+        String loggingUserId = userServiceImplementation.findByUserId();
+        product.setProductVendorId(loggingUserId);
         return productRepository.save(product);
     }
 
@@ -32,6 +38,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     public List<Product> getAllProducts() {
+
         return productRepository.findAll();
     }
 
@@ -46,13 +53,32 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    public List<Product> getAllProductsUsingVendorId(String productvendorid) {
+        return productRepository.getAllByProductVendorId(productvendorid);
+    }
+
+    @Override
+    public List<Product> getAllProductForLoginVendor() {
+        return getAllProductsUsingVendorId(userServiceImplementation.findByUserId());
+    }
+
+    @Override
+    public Integer getProductPrice(String id) {
+        return getProductById(Long.valueOf(id)).getProductPrice();
+    }
+
+
+    @Override
     public void updateProduct(Product product) {
+
         productRepository.save(product);
     }
 
     @Override
     public void deleteProductById(Long id) {
-        productRepository.deleteById(id);
+        Product product = getProductById(id);
+        product.setProductDeleteStatus(true);
+        productRepository.save(product);
     }
 
 

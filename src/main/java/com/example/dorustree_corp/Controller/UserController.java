@@ -3,7 +3,7 @@ package com.example.dorustree_corp.Controller;
 import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Model.AuthRequest;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
-import com.example.dorustree_corp.Utils.JwtUtils;
+import com.example.dorustree_corp.Service.JwtService;
 import com.example.dorustree_corp.Service.Interfaces.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +24,14 @@ public class UserController {
 
     private final AuthenticationManager authenticationManager;
 
-    private final JwtUtils jwtUtils;
+    private final JwtService jwtService;
 
 
 
     @Autowired
-    public UserController(UserService userServiceImplementation, JwtUtils jwtUtils, AuthenticationManager authenticationManager) {
+    public UserController(UserService userServiceImplementation, JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userServiceImplementation = userServiceImplementation;
-        this.jwtUtils = jwtUtils;
+        this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -67,7 +67,7 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword())
         );
         if (authentication.isAuthenticated()) {
-            return jwtUtils.generateToken(authRequest.getUserName());
+            return jwtService.generateToken(authRequest.getUserName());
         } else {
             throw new UsernameNotFoundException("Invalid user request!");
         }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +30,7 @@ public class ProductController {
         this.excelService = excelService;
     }
 
+    @PreAuthorize("hasRole('VENDOR')")
     @PostMapping("/addproduct")
     public String addProduct(@Valid @RequestBody Product product){
         productServiceImplementation.addProduct(product);
@@ -39,6 +41,7 @@ public class ProductController {
         return "Added";
     }
 
+    @PreAuthorize("hasRole('VENDOR')")
     @PostMapping("/upload-excel")
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
         try {
@@ -56,10 +59,21 @@ public class ProductController {
         return productServiceImplementation.getProductById(id);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'VENDOR')")
     @GetMapping("/getproducts")
     public List<Product> getAllProducts(){
 
         return productServiceImplementation.getAllProducts();
+    }
+
+    @GetMapping("/getproducts/{productvendorid}")
+    public List<Product> getAllProductsUsingVendorId(@PathVariable String productvendorid){
+        return productServiceImplementation.getAllProductsUsingVendorId(productvendorid);
+    }
+
+    @GetMapping("/getproductsofloginvendor")
+    public List<Product> getAllProductForLoginVendor(){
+        return productServiceImplementation.getAllProductForLoginVendor();
     }
 
     @GetMapping("/getproductbystatus/{productstatus}")
@@ -71,6 +85,8 @@ public class ProductController {
     public List<Product> getAllProductsByCategory(@PathVariable String productCategory){
         return productServiceImplementation.getAllProductsByCategory(productCategory);
     }
+
+
 
     @PutMapping("/updateproduct")
     public String updateProduct(@RequestBody Product product){

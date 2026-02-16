@@ -1,5 +1,6 @@
 package com.example.dorustree_corp.Configurations;
 
+import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
+import java.util.Set;
 
 
 @Configuration
@@ -30,6 +32,29 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
+    private static final String[] ADMIN_PATHS = {
+            "/api/cart/**",
+            "/api/order/getA",
+            "/api/system/**"
+    };
+
+    private static final String[] VENDOR_PATHS = {
+            "/api/product/**",
+            "/api/orders/vendor/**"
+    };
+
+    private static final String[] USER_PATHS = {
+            "/api/cart/**",
+            "/api/order/createorder",
+            "/api/orderstatus/**"
+    };
+
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/users/login",
+            "/api/product/getproducts"
+    };
+
+
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsService userDetailsService) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
@@ -38,17 +63,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         return http
-                .cors(Customizer.withDefaults()) // Use the CorsConfigurationSource bean below
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(ADMIN_PATHS).hasRole("ADMIN")
+                        .requestMatchers(VENDOR_PATHS).hasRole("VENDOR")
+                        .requestMatchers(USER_PATHS).hasRole("USER")
+
+                        .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider()) // Explicitly register the provider
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

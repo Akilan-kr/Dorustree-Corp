@@ -33,7 +33,7 @@ public class UserServiceImplementation implements UserService {
         try {
             String loggedInUserEmail = authenticationFacade.getAuthentication().getName();
             Optional<UserData> loggedInUser = userRepository.findByUserEmail(loggedInUserEmail);
-            System.out.println(loggedInUser.get().getUserEmail());
+//            System.out.println(loggedInUser.get().getUserEmail());
             return loggedInUser.get().getId();
         }catch(Exception e) {
             throw new UsernameNotFoundException("User not founded", e);
