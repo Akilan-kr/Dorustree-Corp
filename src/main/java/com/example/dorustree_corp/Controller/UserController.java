@@ -64,7 +64,8 @@ public class UserController {
         if (authentication.isAuthenticated()) {
             log.info("C: User with {} email is Authenticated", authRequest.getUserName());
             String token = jwtService.generateToken(authRequest.getUserName());
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new AuthResponse(authRequest.getUserName(), token));
+            UserRoles userRoles = userServiceImplementation.findUserRole(authRequest.getUserName());
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new AuthResponse(authRequest.getUserName(),userRoles, token));
         } else {
             log.error("C: There is no user with {} email is in the Db", authRequest.getUserName());
             throw new UsernameNotFoundException("Invalid user request!");

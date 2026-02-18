@@ -8,9 +8,9 @@ import com.example.dorustree_corp.Repository.MongoDb.UserRepository;
 import com.example.dorustree_corp.Repository.MySql.BlacklistTokenRepository;
 import com.example.dorustree_corp.Service.Interfaces.AuthenticationFacade;
 import com.example.dorustree_corp.Service.Interfaces.UserService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +47,16 @@ public class UserServiceImplementation implements UserService {
         }catch(Exception e) {
             throw new UsernameNotFoundException("User not founded", e);
         }
+    }
+
+    @Override
+    public UserRoles findUserRole(@NotBlank String userName){
+        Optional<UserData> userDataOptional = userRepository.findByUserEmail(userName);
+        if(userDataOptional.isEmpty()){
+            log.error("S: No User founded with userEmail({})", userName);
+            throw new UsernameNotFoundException("no user founded with this email");
+        } else
+            return userDataOptional.get().getUserRole();
     }
 
 

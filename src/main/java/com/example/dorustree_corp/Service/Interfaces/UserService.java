@@ -4,6 +4,7 @@ import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Enums.UserStatusForVendor;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
 import com.example.dorustree_corp.Model.MySql.BlacklistToken;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public interface UserService {
 
     void requestToBecameVendor();
 
+    UserRoles findUserRole(@NotBlank String userName);
 
     List<UserData> getAllRequestDetails(UserStatusForVendor userstatusforvendor);
 
