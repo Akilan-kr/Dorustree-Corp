@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,9 +56,9 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Cacheable(value = "activeProducts")
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(int page, int size) {
         log.info("S: Get all Products");
-        return productRepository.findAllByProductStatus(ProductStatus.ACTIVE);
+        return productRepository.findAllByProductStatus(PageRequest.of(page, size),ProductStatus.ACTIVE);
     }
 
     @Override
@@ -69,22 +70,22 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Cacheable(value = "productsByStatus", key = "#productstatus")
-    public List<Product> getAllProductsByStatus(ProductStatus productstatus) {
+    public List<Product> getAllProductsByStatus(int page, int size, ProductStatus productstatus) {
         log.info("S: Get All Product by the Status({})", productstatus);
-        return productRepository.findAllByProductStatus(productstatus);
+        return productRepository.findAllByProductStatus(PageRequest.of(page, size), productstatus);
     }
 
     @Override
     @Cacheable(value = "productsByVendor", key = "#productvendorid")
-    public List<Product> getAllProductsUsingVendorId(String productvendorid) {
+    public List<Product> getAllProductsUsingVendorId(int page, int size, String productvendorid) {
         log.info("S: Get All the Product based on the vendorId({})", productvendorid);
-        return productRepository.getAllByProductVendorId(productvendorid);
+        return productRepository.getAllByProductVendorId(PageRequest.of(page, size), productvendorid);
     }
 
     @Override
-    public List<Product> getAllProductForLoginVendor() {
+    public List<Product> getAllProductForLoginVendor(int page, int size) {
         log.info("S: Get All products of the login vendor({})", userServiceImplementation.findByUserId());
-        return getAllProductsUsingVendorId(userServiceImplementation.findByUserId());
+        return getAllProductsUsingVendorId(page, size, userServiceImplementation.findByUserId());
     }
 
     @Override

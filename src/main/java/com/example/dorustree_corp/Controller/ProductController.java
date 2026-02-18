@@ -7,8 +7,6 @@ import com.example.dorustree_corp.Service.Interfaces.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -67,33 +65,41 @@ public class ProductController {
 
     @Operation(summary = "Get all Products - PUBLIC", description = "Returns a list of Products")
     @GetMapping("/getproducts")
-    public List<Product> getAllProducts(){
+    public List<Product> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
         log.info("C: Get Product is called by the user");
-        return productServiceImplementation.getAllProducts();
+        return productServiceImplementation.getAllProducts(page, size);
     }
 
     @Operation(summary = "Get all Products based on VendorId - ADMIN", description = "Returns a list of Product based on the vendorId")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getproducts/{productvendorid}")
-    public List<Product> getAllProductsUsingVendorId(@PathVariable String productvendorid){
+    public List<Product> getAllProductsUsingVendorId(@PathVariable String productvendorid,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size){
         log.info("C: Get products based on the product vendor is called Admin");
-        return productServiceImplementation.getAllProductsUsingVendorId(productvendorid);
+        return productServiceImplementation.getAllProductsUsingVendorId(page, size, productvendorid);
     }
 
     @Operation(summary = "Get all products of vendor who login - VENDOR", description = "Returns a list of Products based on the Vendor currently login")
     @PreAuthorize("hasRole('VENDOR')")
     @GetMapping("/getproductsofloginvendor")
-    public List<Product> getAllProductForLoginVendor(){
+    public List<Product> getAllProductForLoginVendor(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
         log.info("C: Get product based on login vendor is called");
-        return productServiceImplementation.getAllProductForLoginVendor();
+        return productServiceImplementation.getAllProductForLoginVendor(page, size);
     }
 
     @Operation(summary = "Get all Product based on the product status - ADMIN, VENDOR", description = "Returns a list of product based on the status")
     @PreAuthorize("hasAnyRole('VENDOR','ADMIN')")
     @GetMapping("/getproductbystatus/{productstatus}")
-    public List<Product> getAllProductsByStatus(@PathVariable ProductStatus productstatus){
+    public List<Product> getAllProductsByStatus(@PathVariable ProductStatus productstatus,
+                                                @RequestParam(defaultValue = "0") int page,
+                                                @RequestParam(defaultValue = "10") int size){
         log.info("C: Get product based on the product status is called");
-        return productServiceImplementation.getAllProductsByStatus(productstatus);
+        return productServiceImplementation.getAllProductsByStatus(page, size, productstatus);
     }
 
     @Operation(summary = "Get all product based on category - PUBLIC", description = "Returns a list of product based on the category")
