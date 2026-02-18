@@ -8,4 +8,6 @@ public interface CartService {
     CartData getCart();
 
     void deleteCart();
+
+    void removeFromCart(CartData cartData);
 }

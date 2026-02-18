@@ -1,5 +1,6 @@
 package com.example.dorustree_corp.Service.Interfaces;
 
+import com.example.dorustree_corp.Enums.ProductStatus;
 import com.example.dorustree_corp.Model.MySql.Product;
 
 import java.util.List;
@@ -17,12 +18,15 @@ public interface ProductService {
 
     void deleteProductById(Long id);
 
-    List<Product> getAllProductsByStatus(Boolean productstatus);
 
     List<Product> getAllProductsUsingVendorId(String productvendorid);
 
     List<Product> getAllProductForLoginVendor();
 
     Integer getProductPrice(String id);
+
+    void updateStatusOfTheProduct(String productid);
+
+    List<Product> getAllProductsByStatus(ProductStatus productstatus);
 }
 

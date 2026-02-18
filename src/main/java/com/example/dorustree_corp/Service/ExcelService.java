@@ -1,8 +1,10 @@
-package com.example.dorustree_corp.Service.Implementation;
+package com.example.dorustree_corp.Service;
 
+import com.example.dorustree_corp.Enums.ProductStatus;
 import com.example.dorustree_corp.Model.MySql.Product;
 import com.example.dorustree_corp.Repository.MySql.ProductRepository;
 import com.example.dorustree_corp.Service.Interfaces.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class ExcelService {
 
@@ -49,7 +52,7 @@ public class ExcelService {
                         product.setProductQuantity(
                                 Integer.parseInt(formatter.formatCellValue(row.getCell(3)))
                         );
-                        product.setProductStatus(Boolean.valueOf(formatter.formatCellValue(row.getCell(4))));
+                        product.setProductStatus(ProductStatus.valueOf(formatter.formatCellValue(row.getCell(4))));
                         product.setProductVendorId(loggingUserId);
                         batch.add(product);
 
@@ -67,6 +70,7 @@ public class ExcelService {
 
                 // Save remaining
                 if (!batch.isEmpty()) {
+                    log.info("S: Product is Uploaded using Excel by the user({})", loggingUserId);
                     productRepository.saveAll(batch);
                 }
             }

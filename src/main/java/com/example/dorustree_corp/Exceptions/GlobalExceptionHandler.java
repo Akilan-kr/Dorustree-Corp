@@ -34,7 +34,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<String> handleInvalidEnum(HttpMessageNotReadableException ex) {
-        return new ResponseEntity<>("Invalid role provided. Please use: ADMIN, VENDOR, or USER.",
+        return new ResponseEntity<>("Try to give a valid Json format",
                 HttpStatus.BAD_REQUEST);
     }
+
 }

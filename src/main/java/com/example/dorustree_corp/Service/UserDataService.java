@@ -1,6 +1,5 @@
-package com.example.dorustree_corp.Service.Implementation;
+package com.example.dorustree_corp.Service;
 
-import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Model.MongoDb.UserData;
 import com.example.dorustree_corp.Repository.MongoDb.UserRepository;
 import org.jspecify.annotations.NonNull;
@@ -12,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

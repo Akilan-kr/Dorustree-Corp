@@ -1,5 +1,6 @@
 package com.example.dorustree_corp.Filter;
 
+import com.example.dorustree_corp.Repository.MySql.BlacklistTokenRepository;
 import com.example.dorustree_corp.Service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,34 +22,64 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final BlacklistTokenRepository blacklistTokenRepository;
     @Autowired
-    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtService jwtService) {
+    public JwtAuthenticationFilter(UserDetailsService userDetailsService, JwtService jwtService, BlacklistTokenRepository blacklistTokenRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
+        this.blacklistTokenRepository = blacklistTokenRepository;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
+        String authHeader = request.getHeader("Authorization");
+
+        // ✅ If no token → continue filter chain
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String token = authHeader.substring(7);
+
+        // ✅ Check blacklist FIRST
+        if (blacklistTokenRepository.existsByToken(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token is blacklisted. Please login again.");
+            return;
+        }
+
+        String username = jwtService.extractUsername(token);
+
+        if (username != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            UserDetails userDetails =
+                    userDetailsService.loadUserByUsername(username);
+
             if (jwtService.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authToken);
             }
         }
+
         filterChain.doFilter(request, response);
     }
+
 }

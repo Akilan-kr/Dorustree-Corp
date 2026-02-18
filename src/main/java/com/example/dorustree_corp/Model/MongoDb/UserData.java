@@ -3,6 +3,7 @@ package com.example.dorustree_corp.Model.MongoDb;
 
 import com.example.dorustree_corp.Enums.UserRoles;
 import com.example.dorustree_corp.Enums.UserStatusForVendor;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -19,7 +20,8 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Data
 public class UserData {
     @MongoId(FieldType.OBJECT_ID)
-    private String Id;
+//    @Id
+    private String id;
     @NotBlank(message = "Username cannot be null or empty")
     private String userName;
     @NotBlank(message = "UserEmail cannot be null or empty")

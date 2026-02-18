@@ -1,5 +1,7 @@
 package com.example.dorustree_corp.Model.MySql;
 
+import com.example.dorustree_corp.Enums.ProductDeleteStatus;
+import com.example.dorustree_corp.Enums.ProductStatus;
 import com.example.dorustree_corp.Exceptions.ProductValidationException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -23,11 +25,11 @@ public class Product {
     private String productCategory;
     private Integer productPrice;
     private Integer productQuantity = 0;
-    private Boolean productStatus = false;
-    private Boolean productDeleteStatus = false;
+    private ProductStatus productStatus = ProductStatus.INACTIVE;
+    private ProductDeleteStatus productDeleteStatus = ProductDeleteStatus.NOT_DELETED;
     private String productVendorId;
 
-    public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, Boolean productStatus) {
+    public Product(String productName, String productCategory, Integer productPrice, Integer productQuantity, ProductStatus productStatus) {
         this.productName = productName;
         this.productCategory = productCategory;
         if(productPrice > 0)
