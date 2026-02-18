@@ -10,7 +10,7 @@ public interface OrderService {
 
     OrderData getOrderOfLoginUser();
 
-    String updateOrderStatus(OrderData orderData, OrderStatus orderstatus);
+    boolean updateOrderStatus(OrderData orderData, OrderStatus orderstatus);
 
     List<OrderData> getAllOrders();
 

@@ -92,7 +92,7 @@ public class OrderServiceImplementation implements OrderService {
     }
 
     @Override
-    public String updateOrderStatus(OrderData orderData, OrderStatus orderstatus) {
+    public boolean updateOrderStatus(OrderData orderData, OrderStatus orderstatus) {
         String loginUser = userServiceImplementation.findByUserId();
         UserData user = userServiceImplementation.getUserById(loginUser);
         if(OrderStatus.Order_Cancel == orderstatus || OrderStatus.Order_Received == orderstatus) {
@@ -102,9 +102,9 @@ public class OrderServiceImplementation implements OrderService {
             if(OrderStatus.Order_Cancel == orderstatus){
                 emailService.sendOrderCancellation(user.getUserEmail(), orderData.getId());
             }
-            return "status updated";
+            return true;
         } else
-            return "status not updated";
+            return false;
     }
 
     @Override
