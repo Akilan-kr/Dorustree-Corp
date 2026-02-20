@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,10 +36,7 @@ public class ProductController {
     @PostMapping("/addproduct")
     public ResponseEntity<?> addProduct(@Valid @RequestBody Product product){
         productServiceImplementation.addProduct(product);
-//        if(product1 != null) {
         log.info("C: New Product added by the Vendor");
-//            return product1;
-//        }
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -66,7 +64,7 @@ public class ProductController {
 
     @Operation(summary = "Get all Products - PUBLIC", description = "Returns a list of Products")
     @GetMapping("/getproducts")
-    public ResponseEntity<List<Product>> getAllProducts(
+    public ResponseEntity<Page<Product>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
         log.info("C: Get Product is called by the user");
@@ -96,7 +94,7 @@ public class ProductController {
     @Operation(summary = "Get all Product based on the product status - ADMIN, VENDOR", description = "Returns a list of product based on the status")
     @PreAuthorize("hasAnyRole('VENDOR','ADMIN')")
     @GetMapping("/getproductbystatus/{productstatus}")
-    public ResponseEntity<List<Product>> getAllProductsByStatus(@PathVariable ProductStatus productstatus,
+    public ResponseEntity<Page<Product>> getAllProductsByStatus(@PathVariable ProductStatus productstatus,
                                                 @RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "10") int size){
         log.info("C: Get product based on the product status is called");
@@ -136,5 +134,4 @@ public class ProductController {
         productServiceImplementation.updateStatusOfTheProduct(productid);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
-
 }

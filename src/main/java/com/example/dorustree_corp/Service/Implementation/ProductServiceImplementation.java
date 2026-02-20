@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,27 +41,41 @@ public class ProductServiceImplementation implements ProductService {
             @CacheEvict(value = "productsByStatus", allEntries = true),
             @CacheEvict(value = "productsByVendor", allEntries = true)
     })
-    public Product addProduct(Product product) {
+    public void addProduct(Product product) {
         String loggingUserId = userServiceImplementation.findByUserId();
         product.setProductVendorId(loggingUserId);
         log.info("S: Product is add by the Vendor({})", loggingUserId);
-        return productRepository.save(product);
+        productRepository.save(product);
     }
 
     @Override
     @Cacheable(value = "product", key = "#id")
     public Product getProductById(Long id) {
         log.info("S: Get the product by its Id({})", id);
-        return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if(optionalProduct.isEmpty()){
+            log.info("S: There is no product with id({})", id);
+            return new Product();//not a good way
+        } else
+            return optionalProduct.get();
+
     }
 
     @Override
     @Cacheable(value = "activeProducts")
-    public List<Product> getAllProducts(int page, int size) {
+    public Page<Product> getAllProducts(int page, int size) {
         log.info("S: Get all Products");
-        return productRepository.findAllByProductStatus(PageRequest.of(page, size),ProductStatus.ACTIVE);
+
+        return productRepository.findAllByProductStatus(
+                        PageRequest.of(page, size),
+                        ProductStatus.ACTIVE
+                );
+
+
     }
+
+
+
 
     @Override
     @Cacheable(value = "productsByCategory", key = "#productCategory")
@@ -70,7 +86,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Cacheable(value = "productsByStatus", key = "#productstatus")
-    public List<Product> getAllProductsByStatus(int page, int size, ProductStatus productstatus) {
+    public Page<Product> getAllProductsByStatus(int page, int size, ProductStatus productstatus) {
         log.info("S: Get All Product by the Status({})", productstatus);
         return productRepository.findAllByProductStatus(PageRequest.of(page, size), productstatus);
     }
@@ -95,6 +111,12 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "activeProducts", allEntries = true),
+            @CacheEvict(value = "productsByCategory", allEntries = true),
+            @CacheEvict(value = "productsByStatus", allEntries = true),
+            @CacheEvict(value = "productsByVendor", allEntries = true)
+    })
     public void updateStatusOfTheProduct(String productid) {
         log.info("S: Update the Product Status");
         Product product = getProductById(Long.valueOf(productid));
@@ -105,6 +127,8 @@ public class ProductServiceImplementation implements ProductService {
         }
         updateProduct(product);
     }
+
+
 
 
     @Override
@@ -118,7 +142,9 @@ public class ProductServiceImplementation implements ProductService {
             }
     )
     public void updateProduct(Product product) {
+        String loggingUser = userServiceImplementation.findByUserId();
         log.info("S: Updating the Product for the productId: {}", product.getProductId());
+        product.setProductVendorId(loggingUser);
         productRepository.save(product);
     }
 

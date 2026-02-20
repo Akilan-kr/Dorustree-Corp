@@ -2,15 +2,17 @@ package com.example.dorustree_corp.Service.Interfaces;
 
 import com.example.dorustree_corp.Enums.ProductStatus;
 import com.example.dorustree_corp.Model.MySql.Product;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface ProductService {
-    Product addProduct(Product product);
+    void addProduct(Product product);
 
     Product getProductById(Long id);
 
-    List<Product> getAllProducts(int page, int size);
+    Page<Product> getAllProducts(int page, int size);
+
 
     List<Product> getAllProductsByCategory(String productCategory);
 
@@ -27,6 +29,6 @@ public interface ProductService {
 
     void updateStatusOfTheProduct(String productid);
 
-    List<Product> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
+    Page<Product> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
 }
 

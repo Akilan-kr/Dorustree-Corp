@@ -18,7 +18,6 @@ public class CartData {
     private Map<String, Integer> items = new HashMap<>();
 
     public CartData( Map<String, Integer> items) {
-        this.userId = userId;
         this.items = items;
     }
 }

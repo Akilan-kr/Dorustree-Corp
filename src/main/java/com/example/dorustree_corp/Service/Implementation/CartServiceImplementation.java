@@ -30,29 +30,35 @@ public class CartServiceImplementation implements CartService {
 
     @Override
     public void addToCart(CartData cartData) {
+        if (cartData.getItems() == null || cartData.getItems().isEmpty()) {
+            log.warn("Attempted to add to cart with empty items for user {}", userService.findByUserId());
+            return;
+        }
+
         String loggedInUserId = userService.findByUserId();
         Optional<CartData> cartOptional = cartRepository.findByUserId(loggedInUserId);
+
         String productId = cartData.getItems().keySet().iterator().next();
         Integer quantity = cartData.getItems().get(productId);
 
         if (cartOptional.isEmpty()) {
             CartData cart = new CartData();
             cart.setUserId(loggedInUserId);
-            Map<String, Integer> cartItems = new HashMap<>();
-            cartItems.put(productId, quantity);
-            cart.setItems(cartItems);
+            cart.setItems(new HashMap<>(cartData.getItems()));
             log.info("S: User({}) created a new cart", loggedInUserId);
             cartRepository.save(cart);
         } else {
             CartData existingCart = cartOptional.get();
             Map<String, Integer> cartItems = existingCart.getItems();
-            cartItems.put(productId,
-                    cartItems.getOrDefault(productId, 0) + quantity);
+            cartItems.put(productId, cartItems.getOrDefault(productId, 0) + quantity);
             existingCart.setItems(cartItems);
-            log.info("S: User({}) is update the cart with new Product", loggedInUserId);
+            log.info("S: User({}) updated the cart with new product", loggedInUserId);
             cartRepository.save(existingCart);
         }
     }
+
+
+
 
     @Override
     public void removeFromCart(CartData cartData) {

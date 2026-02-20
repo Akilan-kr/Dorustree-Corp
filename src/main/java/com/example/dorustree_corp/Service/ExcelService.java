@@ -7,6 +7,8 @@ import com.example.dorustree_corp.Service.Interfaces.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +28,12 @@ public class ExcelService {
             this.userServiceImplementation = userServiceImplementation;
         }
 
+        @Caching(evict = {
+                @CacheEvict(value = "activeProducts", allEntries = true),
+                @CacheEvict(value = "productsByCategory", allEntries = true),
+                @CacheEvict(value = "productsByStatus", allEntries = true),
+                @CacheEvict(value = "productsByVendor", allEntries = true)
+        })
         public void importProducts(MultipartFile file) throws IOException {
             String loggingUserId = userServiceImplementation.findByUserId();
             List<Product> batch = new ArrayList<>();

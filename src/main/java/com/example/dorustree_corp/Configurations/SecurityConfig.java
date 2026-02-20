@@ -37,11 +37,11 @@ public class SecurityConfig {
     };
 
     private static final String[] VENDOR_PATHS = {
-
+//            "/api/cart/**"
     };
 
     private static final String[] USER_PATHS = {
-            "/api/cart/**"
+//            "/api/cart/**"
     };
 
     private static final String[] PUBLIC_ENDPOINTS = {
@@ -72,9 +72,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(ADMIN_PATHS).hasRole("ADMIN")
-                        .requestMatchers(VENDOR_PATHS).hasRole("VENDOR")
                         .requestMatchers(USER_PATHS).hasRole("USER")
+                        .requestMatchers(VENDOR_PATHS).hasRole("VENDOR")
+                        .requestMatchers(ADMIN_PATHS).hasRole("ADMIN")
+
+
 
                         .anyRequest().authenticated()
                 )
