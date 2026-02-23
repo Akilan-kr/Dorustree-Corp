@@ -1,0 +1,128 @@
+package com.dorustree.dorustree_corp.Service.Implementation;
+
+import com.dorustree.dorustree_corp.Enums.OrderStatus;
+import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
+import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
+import com.dorustree.dorustree_corp.Model.MySql.Product;
+import com.dorustree.dorustree_corp.Dto.OrderItems;
+import com.dorustree.dorustree_corp.Repository.MongoDb.OrderRepository;
+import com.dorustree.dorustree_corp.Service.EmailService;
+import com.dorustree.dorustree_corp.Service.Interfaces.IOrderService;
+import com.dorustree.dorustree_corp.Service.Interfaces.IProductService;
+import com.dorustree.dorustree_corp.Service.Interfaces.IUserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Slf4j
+@Service
+public class OrderService implements IOrderService {
+
+    private final IUserService userServiceImplementation;
+    private final OrderRepository orderRepository;
+    private final IProductService productServiceImplementation;
+    private final EmailService emailService;
+
+    @Autowired
+    public OrderService(IUserService userServiceImplementation, OrderRepository orderRepository, IProductService productServiceImplementation, EmailService emailService) {
+        this.userServiceImplementation = userServiceImplementation;
+        this.orderRepository = orderRepository;
+        this.productServiceImplementation = productServiceImplementation;
+        this.emailService = emailService;
+    }
+
+
+    @Override
+    public void createOrder(OrderData orderData) {
+//        System.out.println("Main Thread: " + Thread.currentThread().getName());
+
+        String loggingUserId = userServiceImplementation.findByUserId();
+//        System.out.println(loggingUserId);
+        UserData user = userServiceImplementation.getUserById(loggingUserId);
+//        System.out.println(user.getUserEmail());
+        int totalPrice = 0;
+
+        orderData.setOrderedUserId(loggingUserId);
+        orderData.setOrderStatus(OrderStatus.Order_Initiated);
+
+        for (OrderItems item : orderData.getOrderedItems()) {
+
+            Long productId = Long.valueOf(item.getProductId());
+            Integer quantity = item.getProductQuantity();
+
+            Product product = productServiceImplementation.getProductById(productId);
+
+            // ✅ Validate vendor
+            if (!product.getProductVendorId().equals(item.getProductVendorId())) {
+                throw new RuntimeException("Vendor mismatch for product: " + productId);
+            }
+
+            // ✅ Validate stock
+            if (product.getProductQuantity() < quantity) {
+                throw new RuntimeException("Insufficient stock for product: " + productId);
+            }
+
+            // ✅ Always use DB price
+            int productPrice = product.getProductPrice();
+
+            totalPrice += productPrice * quantity;
+
+            // Reduce stock
+            product.setProductQuantity(product.getProductQuantity() - quantity);
+            productServiceImplementation.updateProduct(product);
+
+            // Optional: store actual price into order item
+            item.setProductPrice(productPrice);
+        }
+
+        orderData.setTotalPrice(totalPrice);
+        log.info("S: Order is Created by the user({}) with a orderId:{}",loggingUserId,orderData.getId());
+        orderRepository.save(orderData);
+        emailService.sendOrderConfirmation(user.getUserEmail(), orderData.getId());
+    }
+
+
+
+    @Override
+    public OrderData getOrderOfLoginUser() {
+        log.info("S: Getting Order Detail for the user({})", userServiceImplementation.findByUserId());
+        return orderRepository.findByOrderedUserId(userServiceImplementation.findByUserId());
+    }
+
+    @Override
+    public boolean updateOrderStatus(OrderData orderData, OrderStatus orderstatus) {
+        String loginUser = userServiceImplementation.findByUserId();
+        UserData user = userServiceImplementation.getUserById(loginUser);
+        if(OrderStatus.Order_Cancel == orderstatus || OrderStatus.Order_Received == orderstatus) {
+            orderData.setOrderStatus(orderstatus);
+            log.info("S: Updating Order Status of the User({}) with a OrderId({}) as {}", loginUser, orderData.getId(), orderstatus);
+            orderRepository.save(orderData);
+            if(OrderStatus.Order_Cancel == orderstatus){
+                emailService.sendOrderCancellation(user.getUserEmail(), orderData.getId());
+            }
+            return true;
+        } else
+            return false;
+    }
+
+    @Override
+    public List<OrderData> getAllOrders() {
+        log.info("S: Get list of Orders");
+        return orderRepository.findAll();
+    }
+
+    @Override
+    public List<OrderData> getAllOrdersByVendorId(String vendorid) {
+        log.info("S: Get all the Orders Based on the VendorId({})", vendorid);
+        return orderRepository.findByOrderedItemsProductVendorId(vendorid);
+    }
+
+    @Override
+    public List<OrderData> getAllOrderByOrderStatus(OrderStatus orderstatus) {
+        log.info("S: Get all Orders By OrderStatus with a status of {}", orderstatus);
+        return orderRepository.findAllByOrderStatus(orderstatus);
+    }
+
+}
