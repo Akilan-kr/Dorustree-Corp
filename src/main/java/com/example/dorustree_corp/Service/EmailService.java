@@ -34,6 +34,7 @@ public class EmailService {
             log.error("Error while Sending Email, ",e);
         }
     }
+    @Async("taskExecutor")
     public void sendOrderCancellation(String toEmail, String orderId){
         try {
             SimpleMailMessage message = new SimpleMailMessage();

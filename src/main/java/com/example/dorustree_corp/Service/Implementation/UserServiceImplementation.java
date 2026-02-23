@@ -74,6 +74,13 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    public UserData getUser() {
+        String loggedInUser = findByUserId();
+        return userRepository.findById(loggedInUser).orElseThrow(() ->
+                new RuntimeException("User not found"));
+    }
+
+    @Override
     public List<UserData> getAllUsers() {
         log.info("S: Get all the users");
         return userRepository.findAll();

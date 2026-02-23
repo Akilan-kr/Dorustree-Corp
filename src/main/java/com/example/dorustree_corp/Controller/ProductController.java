@@ -64,11 +64,12 @@ public class ProductController {
 
     @Operation(summary = "Get all Products - PUBLIC", description = "Returns a list of Products")
     @GetMapping("/getproducts")
-    public ResponseEntity<Page<Product>> getAllProducts(
+    public ResponseEntity<List<Product>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size){
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search){
         log.info("C: Get Product is called by the user");
-        return ResponseEntity.ok(productServiceImplementation.getAllProducts(page, size));
+        return ResponseEntity.ok(productServiceImplementation.getAllProducts(page, size, search));
     }
 
     @Operation(summary = "Get all Products based on VendorId - ADMIN", description = "Returns a list of Product based on the vendorId")
@@ -94,7 +95,7 @@ public class ProductController {
     @Operation(summary = "Get all Product based on the product status - ADMIN, VENDOR", description = "Returns a list of product based on the status")
     @PreAuthorize("hasAnyRole('VENDOR','ADMIN')")
     @GetMapping("/getproductbystatus/{productstatus}")
-    public ResponseEntity<Page<Product>> getAllProductsByStatus(@PathVariable ProductStatus productstatus,
+    public ResponseEntity<List<Product>> getAllProductsByStatus(@PathVariable ProductStatus productstatus,
                                                 @RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "10") int size){
         log.info("C: Get product based on the product status is called");

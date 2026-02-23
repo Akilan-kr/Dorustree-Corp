@@ -13,8 +13,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,26 +56,36 @@ public class ProductServiceImplementation implements ProductService {
     public Product getProductById(Long id) {
         log.info("S: Get the product by its Id({})", id);
         Optional<Product> optionalProduct = productRepository.findById(id);
-        if(optionalProduct.isEmpty()){
-            log.info("S: There is no product with id({})", id);
-            return new Product();//not a good way
-        } else
-            return optionalProduct.get();
+        return optionalProduct.orElseThrow(() ->
+                new RuntimeException("Product not found"));
 
     }
 
     @Override
-    @Cacheable(value = "activeProducts")
-    public Page<Product> getAllProducts(int page, int size) {
-        log.info("S: Get all Products");
+    @Cacheable(value = "activeProducts", key = "#page + '-' + #size + '-' + #search")
+    public List<Product> getAllProducts(int page, int size, String search) {
 
-        return productRepository.findAllByProductStatus(
-                        PageRequest.of(page, size),
-                        ProductStatus.ACTIVE
-                );
+        Page<Product> productPage;
 
+        if (search == null || search.isEmpty()) {
+            // Database handles pagination directly
+            return productRepository.findAllByProductStatus(
+                    PageRequest.of(page, size),
+                    ProductStatus.ACTIVE
+            );
+        } else {
+            // Database handles pagination and filtering
+            productPage = productRepository.findByProductStatusAndProductNameContainingIgnoreCaseOrProductStatusAndProductCategoryContainingIgnoreCase(
+                    ProductStatus.ACTIVE, search,
+                    ProductStatus.ACTIVE, search,
+                    PageRequest.of(page, size)
+            );
+        }
 
+        // Convert to list for caching/serialization
+        return productPage.getContent();
     }
+
 
 
 
@@ -86,7 +99,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     @Cacheable(value = "productsByStatus", key = "#productstatus")
-    public Page<Product> getAllProductsByStatus(int page, int size, ProductStatus productstatus) {
+    public List<Product> getAllProductsByStatus(int page, int size, ProductStatus productstatus) {
         log.info("S: Get All Product by the Status({})", productstatus);
         return productRepository.findAllByProductStatus(PageRequest.of(page, size), productstatus);
     }

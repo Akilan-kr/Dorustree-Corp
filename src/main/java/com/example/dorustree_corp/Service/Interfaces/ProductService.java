@@ -11,7 +11,7 @@ public interface ProductService {
 
     Product getProductById(Long id);
 
-    Page<Product> getAllProducts(int page, int size);
+    List<Product> getAllProducts(int page, int size, String search);
 
 
     List<Product> getAllProductsByCategory(String productCategory);
@@ -29,6 +29,6 @@ public interface ProductService {
 
     void updateStatusOfTheProduct(String productid);
 
-    Page<Product> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
+    List<Product> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
 }
 

@@ -72,6 +72,14 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Get user who is logged in - USER", description = "Returns a User based on which user is logged in")
+    @PreAuthorize("hasAnyRole('USER', 'VENDOR')")
+    @GetMapping("/getuser")
+    public ResponseEntity<UserData> getUser(){
+        log.info("C: Get user who is logged in");
+        return ResponseEntity.ok(userServiceImplementation.getUser());
+    }
+
     @Operation(summary = "Logout to all Users - ADMIN, VENDOR, USER", description = "Returns ok status 200 with logout success message")
     @PreAuthorize("hasAnyRole('USER','VENDOR','ADMIN')")
     @PostMapping("/logout")

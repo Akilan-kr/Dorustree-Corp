@@ -30,4 +30,6 @@ public interface UserService {
     void promoteUserToVendor(String userid, UserStatusForVendor userStatusForVendor);
 
     void logout(BlacklistToken blacklistedToken);
+
+    UserData getUser();
 }
