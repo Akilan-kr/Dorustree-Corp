@@ -10,9 +10,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,70 +21,62 @@ import java.util.List;
 @Service
 public class ExcelService {
 
-        private final ProductRepository productRepository;
-        private final IUserService userServiceImplementation;
+    private final ProductRepository productRepository;
+    private final IUserService userServiceImplementation;
 
-        public ExcelService(ProductRepository productRepository, IUserService userServiceImplementation) {
-            this.productRepository = productRepository;
-            this.userServiceImplementation = userServiceImplementation;
-        }
+    public ExcelService(ProductRepository productRepository, IUserService userServiceImplementation) {
+        this.productRepository = productRepository;
+        this.userServiceImplementation = userServiceImplementation;
+    }
 
-        @Caching(evict = {
-                @CacheEvict(value = "activeProducts", allEntries = true),
-                @CacheEvict(value = "productsByCategory", allEntries = true),
-                @CacheEvict(value = "productsByStatus", allEntries = true),
-                @CacheEvict(value = "productsByVendor", allEntries = true)
-        })
-        public void importProducts(MultipartFile file) throws IOException {
-            String loggingUserId = userServiceImplementation.findByUserId();
-            List<Product> batch = new ArrayList<>();
-            int batchSize = 500;
+    @Caching(evict = {
+            @CacheEvict(value = "activeProducts", allEntries = true),
+            @CacheEvict(value = "productsByCategory", allEntries = true),
+            @CacheEvict(value = "productsByStatus", allEntries = true),
+            @CacheEvict(value = "productsByVendor", allEntries = true)
+    })
+    @Transactional
+    public void importProducts(MultipartFile file) throws Exception {
 
-            try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+        String loggingUserId = userServiceImplementation.findByUserId();
+        List<Product> batch = new ArrayList<>();
+        int batchSize = 500;
 
-                Sheet sheet = workbook.getSheetAt(0);
-                DataFormatter formatter = new DataFormatter();
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(is)) {
 
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // skip header
+            Sheet sheet = workbook.getSheetAt(0);
+            DataFormatter formatter = new DataFormatter();
 
-                    Row row = sheet.getRow(i);
-                    if (row == null) continue;
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // skip header
 
-                    try {
-                        Product product = new Product();
+                try {
+                    Product product = new Product();
+                    product.setProductName(formatter.formatCellValue(row.getCell(0)));
+                    product.setProductCategory(formatter.formatCellValue(row.getCell(1)));
+                    product.setProductPrice(Integer.parseInt(formatter.formatCellValue(row.getCell(2))));
+                    product.setProductQuantity(Integer.parseInt(formatter.formatCellValue(row.getCell(3))));
+                    product.setProductStatus(ProductStatus.valueOf(formatter.formatCellValue(row.getCell(4))));
+                    product.setProductVendorId(loggingUserId);
 
-                        product.setProductName(formatter.formatCellValue(row.getCell(0)));
-                        product.setProductCategory(formatter.formatCellValue(row.getCell(1)));
-                        product.setProductPrice(
-                                Integer.parseInt(formatter.formatCellValue(row.getCell(2)))
-                        );
-                        product.setProductQuantity(
-                                Integer.parseInt(formatter.formatCellValue(row.getCell(3)))
-                        );
-                        product.setProductStatus(ProductStatus.valueOf(formatter.formatCellValue(row.getCell(4))));
-                        product.setProductVendorId(loggingUserId);
-                        batch.add(product);
+                    batch.add(product);
 
-                        // Save in batches
-                        if (batch.size() >= batchSize) {
-                            productRepository.saveAll(batch);
-                            batch.clear();
-                        }
-
-                    } catch (Exception e) {
-                        // Skip bad row instead of crashing
-                        System.out.println("Skipping row: " + i);
+                    // Batch save
+                    if (batch.size() >= batchSize) {
+                        productRepository.saveAll(batch);
+                        batch.clear();
                     }
-                }
-
-                // Save remaining
-                if (!batch.isEmpty()) {
-                    log.info("S: Product is Uploaded using Excel by the user({})", loggingUserId);
-                    productRepository.saveAll(batch);
+                } catch (Exception e) {
+                    log.warn("Skipping row {} due to error: {}", row.getRowNum(), e.getMessage());
                 }
             }
+
+            if (!batch.isEmpty()) {
+                productRepository.saveAll(batch);
+            }
+
+            log.info("S: Excel upload completed successfully by user {}", loggingUserId);
         }
+    }
 }
-
-
-

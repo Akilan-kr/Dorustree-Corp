@@ -1,5 +1,6 @@
 package com.dorustree.dorustree_corp.Repository.MySql;
 
+import com.dorustree.dorustree_corp.Enums.ProductDeleteStatus;
 import com.dorustree.dorustree_corp.Enums.ProductStatus;
 import com.dorustree.dorustree_corp.Model.MySql.Product;
 import org.springframework.data.domain.Page;
@@ -8,22 +9,41 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Collection;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findAllByProductCategory(String productcategory);
 
-    List<Product> findAllByProductStatus(PageRequest pageRequest, ProductStatus productstatus);
+    // ===============================
+    // FIND BY CATEGORY
+    // ===============================
+    Page<Product> findAllByProductCategory(String productCategory, Pageable pageable);
 
-    List<Product> getAllByProductVendorId(PageRequest pageRequest, String productvendorid);
+    // ===============================
+    // FIND BY STATUS
+    // ===============================
+    Page<Product> findAllByProductStatus(ProductStatus productStatus, Pageable pageable);
 
+    // ===============================
+    // FIND BY VENDOR
+    // ===============================
+    Page<Product> findAllByProductVendorId(String productVendorId, Pageable pageable);
 
+    // ===============================
+    // SEARCH WITH STATUS
+    // ===============================
     Page<Product> findByProductStatusAndProductNameContainingIgnoreCaseOrProductStatusAndProductCategoryContainingIgnoreCase(
             ProductStatus status1, String name,
             ProductStatus status2, String category,
             Pageable pageable
     );
 
-    List<Product> findByProductStatusAndProductNameContainingIgnoreCaseOrProductStatusAndProductCategoryContainingIgnoreCase(ProductStatus productStatus, String search, ProductStatus productStatus1, String search1);
+    Page<Product> getAllByProductVendorId(PageRequest of, String vendorId);
+
+    Page<Product> findAllByProductVendorIdAndProductDeleteStatus(
+            String vendorId,
+            ProductDeleteStatus productDeleteStatus,
+            Pageable pageable
+    );
+
 }

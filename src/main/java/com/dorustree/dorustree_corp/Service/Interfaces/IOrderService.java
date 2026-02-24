@@ -6,7 +6,7 @@ import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 import java.util.List;
 
 public interface IOrderService {
-    void createOrder(OrderData orderData);
+    void placeOrder(OrderData orderData);
 
     OrderData getOrderOfLoginUser();
 

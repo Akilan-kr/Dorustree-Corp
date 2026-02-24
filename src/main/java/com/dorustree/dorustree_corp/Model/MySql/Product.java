@@ -3,6 +3,7 @@ package com.dorustree.dorustree_corp.Model.MySql;
 import com.dorustree.dorustree_corp.Enums.ProductDeleteStatus;
 import com.dorustree.dorustree_corp.Enums.ProductStatus;
 import com.dorustree.dorustree_corp.Exceptions.ProductValidationException;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

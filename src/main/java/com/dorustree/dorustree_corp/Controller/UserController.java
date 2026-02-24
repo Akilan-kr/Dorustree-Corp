@@ -1,5 +1,6 @@
 package com.dorustree.dorustree_corp.Controller;
 
+import com.dorustree.dorustree_corp.Dto.ApiResponse;
 import com.dorustree.dorustree_corp.Dto.AuthResponse;
 import com.dorustree.dorustree_corp.Enums.UserRoles;
 import com.dorustree.dorustree_corp.Dto.AuthRequest;
@@ -47,15 +48,15 @@ public class UserController {
     @Operation(summary = "Register new user - PUBLIC", description = "Registration for a new user")
 //    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
-    public ResponseEntity<?> addUser(@Valid @RequestBody UserData userData){
+    public ResponseEntity<ApiResponse<?>> addUser(@Valid @RequestBody UserData userData){
         log.info("C: New Register for a User is called");
         userService.addUser(userData);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "New User Register successfully", null));
     }
 
     @Operation(summary = "Login user - PUBLIC", description = "Returns token if user Authenticated, if not return Username not found expection")
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateAndGenerateGetToken(@Valid @RequestBody AuthRequest authRequest){
+    public ResponseEntity<ApiResponse<AuthResponse>> authenticateAndGenerateGetToken(@Valid @RequestBody AuthRequest authRequest){
         log.info("C: User try to login with the email: {}", authRequest.getUserName());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword())
@@ -64,7 +65,7 @@ public class UserController {
             log.info("C: User with {} email is Authenticated", authRequest.getUserName());
             String token = jwtService.generateToken(authRequest.getUserName());
             UserRoles userRoles = userService.findUserRole(authRequest.getUserName());
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new AuthResponse(authRequest.getUserName(),userRoles, token));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true, "User Login", new AuthResponse(authRequest.getUserName(),userRoles, token)));
         } else {
             log.error("C: There is no user with {} email is in the Db", authRequest.getUserName());
             throw new UsernameNotFoundException("Invalid user request!");
@@ -74,15 +75,15 @@ public class UserController {
     @Operation(summary = "Get user who is logged in - USER", description = "Returns a User based on which user is logged in")
     @PreAuthorize("hasAnyRole('USER', 'VENDOR')")
     @GetMapping("/getuser")
-    public ResponseEntity<UserData> getUser(){
+    public ResponseEntity<ApiResponse<UserData>> getUser(){
         log.info("C: Get user who is logged in");
-        return ResponseEntity.ok(userService.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting user detail",userService.getUser()));
     }
 
     @Operation(summary = "Logout to all Users - ADMIN, VENDOR, USER", description = "Returns ok status 200 with logout success message")
     @PreAuthorize("hasAnyRole('USER','VENDOR','ADMIN')")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<?>> logout(HttpServletRequest request) {
         log.info("C: User logging out");
         String authHeader = request.getHeader("Authorization");
 
@@ -96,7 +97,7 @@ public class UserController {
             userService.logout(blacklistedToken);
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true,"User logout successfully", null));
     }
 
 
@@ -105,60 +106,60 @@ public class UserController {
 //    @ApiResponse(responseCode = "200", description = "Successfully retrieved users")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getusers")
-    public ResponseEntity<List<UserData>> getAllUsers(){
+    public ResponseEntity<ApiResponse<List<UserData>>> getAllUsers(){
         log.info("C: Get all the users Details is called by the Admin");
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting all the users",userService.getAllUsers()));
     }
 
     @Operation(summary = "Get users based on their id - ADMIN", description = "Returns a User based on UserId")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getuser/{id}")
-    public ResponseEntity<UserData> getUserById(@PathVariable String id){
+    public ResponseEntity<ApiResponse<UserData>> getUserById(@PathVariable String id){
         log.info("C: Get user by their user Id is called by Admin, for user Id:{}", id);
-        return ResponseEntity.ok(userService.getUserById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting user based on their id" ,userService.getUserById(id)));
     }
 
     @Operation(summary = "User/Admin update the user data - ADMIN, USER", description = "Returns message updated")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PutMapping("/updateuser")
-    public ResponseEntity<?> updateUser(@Valid @RequestBody UserData userData){
+    public ResponseEntity<ApiResponse<?>> updateUser(@Valid @RequestBody UserData userData){
         log.info("C: User({}) call update user to update their data", userData.getId());
         userService.updateUser(userData);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "updated the User successfully", null));
     }
 
     @Operation(summary = "Get all users based on the User Status - ADMIN", description = "Returns a list of users based on Roles")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getalluserbystatus/{userrole}")
-    public ResponseEntity<List<UserData>> getAllUserByRoles(@PathVariable UserRoles userrole){
+    public ResponseEntity<ApiResponse<List<UserData>>> getAllUserByRoles(@PathVariable UserRoles userrole){
         log.info("C: Get users based on the userRole is called by the Admin: for role: {}", userrole);
-        return ResponseEntity.ok(userService.getAllUsersByRole(userrole));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Gettig all users based on the userRole",userService.getAllUsersByRole(userrole)));
     }
 
     @Operation(summary = "User Request to Admin to became Vendor - USER", description = "Returns a message request sent")
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/requesttobecamevendor")
-    public ResponseEntity<?> requestToBecameVendor(){
+    public ResponseEntity<ApiResponse<?>> requestToBecameVendor(){
         log.info("C: User send a request to became vendor");
         userService.requestToBecameVendor();
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true, "Request to became Vender is registered", null));
     }
 
     @Operation(summary = "Get all Users Based on the request details status - ADMIN", description = "Returns a list of users based on the user status for vendor")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getallrequestdetails/{userstatusforvendor}")
-    public ResponseEntity<List<UserData>> getAllRequestDetails(@PathVariable UserStatusForVendor userstatusforvendor){
+    public ResponseEntity<ApiResponse<List<UserData>>> getAllRequestDetails(@PathVariable UserStatusForVendor userstatusforvendor){
         log.info("C: Get all User Request Details by Admin");
-        return ResponseEntity.ok(userService.getAllRequestDetails(userstatusforvendor));
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting all request detail based on status", userService.getAllRequestDetails(userstatusforvendor)));
     }
 
     @Operation(summary = "Promoting the user based on UserId with userStatus - ADMIN", description = "Returns a message that user promoted or not")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/promote/{userid}/{userstatusforvendor}")
-    public ResponseEntity<?> promoteUserToVendor(@PathVariable String userid,@PathVariable UserStatusForVendor userstatusforvendor){
+    public ResponseEntity<ApiResponse<?>> promoteUserToVendor(@PathVariable String userid,@PathVariable UserStatusForVendor userstatusforvendor){
         log.info("C: Admin Trying to promote/reject the user({}) to vendor", userid);
         userService.promoteUserToVendor(userid, userstatusforvendor);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Promoting the user to vendor", null));
     }
 
 }

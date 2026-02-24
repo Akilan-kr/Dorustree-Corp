@@ -28,9 +28,9 @@ public class OrderController {
     @Operation(summary = "Create a order by the user - USER", description = "Returns a message order created")
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/placeorder") //for user
-    public ResponseEntity<?> createOrder(@RequestBody OrderData orderData){
+    public ResponseEntity<?> placeOrder(@RequestBody OrderData orderData){
         log.info("C: Creating order end was called by user");
-        OrderService.createOrder(orderData);
+        OrderService.placeOrder(orderData);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

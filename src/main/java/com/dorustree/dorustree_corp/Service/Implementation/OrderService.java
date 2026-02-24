@@ -1,15 +1,18 @@
 package com.dorustree.dorustree_corp.Service.Implementation;
 
 import com.dorustree.dorustree_corp.Enums.OrderStatus;
+import com.dorustree.dorustree_corp.Mappers.ProductMapper;
 import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
 import com.dorustree.dorustree_corp.Model.MySql.Product;
 import com.dorustree.dorustree_corp.Dto.OrderItems;
 import com.dorustree.dorustree_corp.Repository.MongoDb.OrderRepository;
+import com.dorustree.dorustree_corp.Repository.MySql.ProductRepository;
 import com.dorustree.dorustree_corp.Service.EmailService;
 import com.dorustree.dorustree_corp.Service.Interfaces.IOrderService;
 import com.dorustree.dorustree_corp.Service.Interfaces.IProductService;
 import com.dorustree.dorustree_corp.Service.Interfaces.IUserService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,26 +25,25 @@ public class OrderService implements IOrderService {
 
     private final IUserService userServiceImplementation;
     private final OrderRepository orderRepository;
-    private final IProductService productServiceImplementation;
+    private final ProductRepository productRepository;
     private final EmailService emailService;
 
     @Autowired
-    public OrderService(IUserService userServiceImplementation, OrderRepository orderRepository, IProductService productServiceImplementation, EmailService emailService) {
+    public OrderService(IUserService userServiceImplementation, OrderRepository orderRepository, ProductRepository productRepository, EmailService emailService, ProductMapper productMapper) {
         this.userServiceImplementation = userServiceImplementation;
         this.orderRepository = orderRepository;
-        this.productServiceImplementation = productServiceImplementation;
+        this.productRepository = productRepository;
         this.emailService = emailService;
     }
 
 
     @Override
-    public void createOrder(OrderData orderData) {
-//        System.out.println("Main Thread: " + Thread.currentThread().getName());
+    @Transactional
+    public void placeOrder(OrderData orderData) {
 
         String loggingUserId = userServiceImplementation.findByUserId();
-//        System.out.println(loggingUserId);
         UserData user = userServiceImplementation.getUserById(loggingUserId);
-//        System.out.println(user.getUserEmail());
+
         int totalPrice = 0;
 
         orderData.setOrderedUserId(loggingUserId);
@@ -52,7 +54,9 @@ public class OrderService implements IOrderService {
             Long productId = Long.valueOf(item.getProductId());
             Integer quantity = item.getProductQuantity();
 
-            Product product = productServiceImplementation.getProductById(productId);
+            // ✅ Fetch entity directly from repository
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
 
             // ✅ Validate vendor
             if (!product.getProductVendorId().equals(item.getProductVendorId())) {
@@ -69,17 +73,20 @@ public class OrderService implements IOrderService {
 
             totalPrice += productPrice * quantity;
 
-            // Reduce stock
+            // ✅ Reduce stock
             product.setProductQuantity(product.getProductQuantity() - quantity);
-            productServiceImplementation.updateProduct(product);
+            productRepository.save(product);
 
-            // Optional: store actual price into order item
+            // ✅ Store actual price into order item
             item.setProductPrice(productPrice);
         }
 
         orderData.setTotalPrice(totalPrice);
-        log.info("S: Order is Created by the user({}) with a orderId:{}",loggingUserId,orderData.getId());
+
         orderRepository.save(orderData);
+
+        log.info("S: Order Created by user({}) with orderId: {}", loggingUserId, orderData.getId());
+
         emailService.sendOrderConfirmation(user.getUserEmail(), orderData.getId());
     }
 

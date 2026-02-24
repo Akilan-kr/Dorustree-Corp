@@ -1,34 +1,35 @@
 package com.dorustree.dorustree_corp.Service.Interfaces;
 
 import com.dorustree.dorustree_corp.Dto.ProductRequest;
+import com.dorustree.dorustree_corp.Dto.ProductResponse;
 import com.dorustree.dorustree_corp.Enums.ProductStatus;
 import com.dorustree.dorustree_corp.Model.MySql.Product;
 
 import java.util.List;
 
 public interface IProductService {
-    void addProduct(ProductRequest productRequest);
+    ProductResponse addProduct(ProductRequest productRequest);
 
-    Product getProductById(Long id);
+    ProductResponse getProductById(Long id);
 
-    List<Product> getAllProducts(int page, int size, String search);
+    List<ProductResponse> getAllProducts(int page, int size, String search);
 
 
-    List<Product> getAllProductsByCategory(String productCategory);
+    List<ProductResponse> getAllProductsByCategory(String productCategory, int page, int size);
 
-    void updateProduct(Product product);
+    ProductResponse updateProduct(Long id,ProductRequest productRequest);
 
     void deleteProductById(Long id);
 
 
-    List<Product> getAllProductsUsingVendorId(int page, int size, String productvendorid);
+    List<ProductResponse> getAllProductsUsingVendorId(int page, int size, String productvendorid);
 
-    List<Product> getAllProductForLoginVendor(int page, int size);
+    List<ProductResponse> getAllProductForLoginVendor(int page, int size);
 
-    Integer getProductPrice(String id);
+//    Integer getProductPrice(String id);
 
     void updateStatusOfTheProduct(String productid);
 
-    List<Product> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
+    List<ProductResponse> getAllProductsByStatus(int page, int size,ProductStatus productstatus);
 }
 

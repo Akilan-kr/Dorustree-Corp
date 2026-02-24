@@ -28,7 +28,7 @@ public class ProductMapper {
                 product.getProductCategory(),
                 product.getProductPrice(),
                 product.getProductQuantity(),
-                product.getProductStatus().name(),
+                product.getProductStatus(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );
