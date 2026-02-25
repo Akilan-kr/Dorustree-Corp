@@ -16,6 +16,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 import java.io.IOException;
 @Slf4j
@@ -31,6 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
         this.blacklistTokenRepository = blacklistTokenRepository;
     }
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -51,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (blacklistTokenRepository.existsByToken(token)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token is blacklisted.");
+                response.getWriter().write("TOKEN_BLACKLISTED");
                 return;
             }
 
@@ -82,16 +86,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
+
+            log.warn("JWT expired: {}", e.getMessage());
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"TOKEN_EXPIRED\"}");
+            return;
+
+        } catch (JwtException e) {
+
             log.warn("Invalid JWT: {}", e.getMessage());
-            // VERY IMPORTANT:
-            // do NOT block public endpoints
-            filterChain.doFilter(request, response);
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"INVALID_TOKEN\"}");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 
 
 }

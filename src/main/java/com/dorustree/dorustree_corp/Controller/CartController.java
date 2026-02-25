@@ -18,8 +18,8 @@ public class CartController {
     private final ICartService CartService;
 
     @Autowired
-    public CartController(ICartService CartServiceImplementation) {
-        this.CartService = CartServiceImplementation;
+    public CartController(ICartService CartService) {
+        this.CartService = CartService;
     }
 
     @Operation(summary = "Add to Cart by the User - USER", description = "Returns a message cart Added")

@@ -1,9 +1,7 @@
 package com.dorustree.dorustree_corp.Controller;
 
-import com.dorustree.dorustree_corp.Dto.ApiResponse;
-import com.dorustree.dorustree_corp.Dto.AuthResponse;
+import com.dorustree.dorustree_corp.Dto.*;
 import com.dorustree.dorustree_corp.Enums.UserRoles;
-import com.dorustree.dorustree_corp.Dto.AuthRequest;
 import com.dorustree.dorustree_corp.Enums.UserStatusForVendor;
 import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
 import com.dorustree.dorustree_corp.Model.MySql.BlacklistToken;
@@ -48,9 +46,9 @@ public class UserController {
     @Operation(summary = "Register new user - PUBLIC", description = "Registration for a new user")
 //    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<?>> addUser(@Valid @RequestBody UserData userData){
+    public ResponseEntity<ApiResponse<?>> addUser(@Valid @RequestBody UserRequest userRequest){
         log.info("C: New Register for a User is called");
-        userService.addUser(userData);
+        userService.addUser(userRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "New User Register successfully", null));
     }
 
@@ -75,7 +73,7 @@ public class UserController {
     @Operation(summary = "Get user who is logged in - USER", description = "Returns a User based on which user is logged in")
     @PreAuthorize("hasAnyRole('USER', 'VENDOR')")
     @GetMapping("/getuser")
-    public ResponseEntity<ApiResponse<UserData>> getUser(){
+    public ResponseEntity<ApiResponse<UserResponse>> getUser(){
         log.info("C: Get user who is logged in");
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting user detail",userService.getUser()));
     }
@@ -160,6 +158,14 @@ public class UserController {
         log.info("C: Admin Trying to promote/reject the user({}) to vendor", userid);
         userService.promoteUserToVendor(userid, userstatusforvendor);
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Promoting the user to vendor", null));
+    }
+
+    @GetMapping("/vendor/stats")
+    @PreAuthorize("hasRole('VENDOR')")
+    public ResponseEntity<ApiResponse<VendorStatsDtoResponse>> getVendorStats() {
+        VendorStatsDtoResponse stats = userService.getVendorStats();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiResponse<>(true, "Vendor stats fetched successfully", stats));
     }
 
 }

@@ -1,16 +1,18 @@
 package com.dorustree.dorustree_corp.Service.Implementation;
 
+import com.dorustree.dorustree_corp.Dto.OrderRequest;
+import com.dorustree.dorustree_corp.Dto.OrderResponse;
 import com.dorustree.dorustree_corp.Enums.OrderStatus;
+import com.dorustree.dorustree_corp.Mappers.OrderMapper;
 import com.dorustree.dorustree_corp.Mappers.ProductMapper;
 import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
 import com.dorustree.dorustree_corp.Model.MySql.Product;
-import com.dorustree.dorustree_corp.Dto.OrderItems;
+import com.dorustree.dorustree_corp.Model.MongoDb.OrderItems;
 import com.dorustree.dorustree_corp.Repository.MongoDb.OrderRepository;
 import com.dorustree.dorustree_corp.Repository.MySql.ProductRepository;
 import com.dorustree.dorustree_corp.Service.EmailService;
 import com.dorustree.dorustree_corp.Service.Interfaces.IOrderService;
-import com.dorustree.dorustree_corp.Service.Interfaces.IProductService;
 import com.dorustree.dorustree_corp.Service.Interfaces.IUserService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,41 +30,39 @@ public class OrderService implements IOrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final EmailService emailService;
+    private final OrderMapper orderMapper;
+    private final UserService userService;
 
     @Autowired
-    public OrderService(IUserService userServiceImplementation, OrderRepository orderRepository, ProductRepository productRepository, EmailService emailService, ProductMapper productMapper) {
+    public OrderService(IUserService userServiceImplementation, OrderRepository orderRepository, ProductRepository productRepository, EmailService emailService, ProductMapper productMapper, OrderMapper orderMapper, UserService userService) {
         this.userServiceImplementation = userServiceImplementation;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.emailService = emailService;
+        this.orderMapper = orderMapper;
+        this.userService = userService;
     }
 
 
     @Override
     @Transactional
-    public void placeOrder(OrderData orderData) {
+    public void placeOrder(OrderRequest orderRequest) {
 
         String loggingUserId = userServiceImplementation.findByUserId();
         UserData user = userServiceImplementation.getUserById(loggingUserId);
 
-        int totalPrice = 0;
+        // ✅ Use mapper here
+        OrderData orderData = orderMapper.toEntity(orderRequest, loggingUserId);
 
-        orderData.setOrderedUserId(loggingUserId);
-        orderData.setOrderStatus(OrderStatus.Order_Initiated);
+        int totalPrice = 0;
 
         for (OrderItems item : orderData.getOrderedItems()) {
 
             Long productId = Long.valueOf(item.getProductId());
             Integer quantity = item.getProductQuantity();
 
-            // ✅ Fetch entity directly from repository
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("Product not found"));
-
-            // ✅ Validate vendor
-            if (!product.getProductVendorId().equals(item.getProductVendorId())) {
-                throw new RuntimeException("Vendor mismatch for product: " + productId);
-            }
 
             // ✅ Validate stock
             if (product.getProductQuantity() < quantity) {
@@ -70,15 +71,17 @@ public class OrderService implements IOrderService {
 
             // ✅ Always use DB price
             int productPrice = product.getProductPrice();
-
             totalPrice += productPrice * quantity;
+
+            // ✅ Set vendor from product (not from user)
+            item.setProductVendorId(product.getProductVendorId());
+
+            // ✅ Set actual DB price
+            item.setProductPrice(productPrice);
 
             // ✅ Reduce stock
             product.setProductQuantity(product.getProductQuantity() - quantity);
             productRepository.save(product);
-
-            // ✅ Store actual price into order item
-            item.setProductPrice(productPrice);
         }
 
         orderData.setTotalPrice(totalPrice);
@@ -92,27 +95,42 @@ public class OrderService implements IOrderService {
 
 
 
+
+
     @Override
-    public OrderData getOrderOfLoginUser() {
+    public List<OrderData> getOrderOfLoginUser() {
         log.info("S: Getting Order Detail for the user({})", userServiceImplementation.findByUserId());
         return orderRepository.findByOrderedUserId(userServiceImplementation.findByUserId());
     }
 
     @Override
-    public boolean updateOrderStatus(OrderData orderData, OrderStatus orderstatus) {
-        String loginUser = userServiceImplementation.findByUserId();
-        UserData user = userServiceImplementation.getUserById(loginUser);
-        if(OrderStatus.Order_Cancel == orderstatus || OrderStatus.Order_Received == orderstatus) {
-            orderData.setOrderStatus(orderstatus);
-            log.info("S: Updating Order Status of the User({}) with a OrderId({}) as {}", loginUser, orderData.getId(), orderstatus);
+    @Transactional
+    public boolean updateOrderStatus(OrderRequest orderRequest, OrderStatus orderStatus) {
+
+        String loginUserId = userServiceImplementation.findByUserId();
+        UserData user = userServiceImplementation.getUserById(loginUserId);
+
+        OrderData orderData = orderMapper.toEntity(orderRequest, loginUserId);
+
+        if (orderStatus == OrderStatus.Order_Cancel || orderStatus == OrderStatus.Order_Received) {
+
+            orderData.setOrderStatus(orderStatus);
+
+            log.info("S: Updating Order Status for User({}) with OrderId({}) to {}",
+                    loginUserId, orderData.getId(), orderStatus);
+
             orderRepository.save(orderData);
-            if(OrderStatus.Order_Cancel == orderstatus){
+
+            if (orderStatus == OrderStatus.Order_Cancel) {
                 emailService.sendOrderCancellation(user.getUserEmail(), orderData.getId());
             }
+
             return true;
-        } else
-            return false;
+        }
+
+        return false;
     }
+
 
     @Override
     public List<OrderData> getAllOrders() {
@@ -121,15 +139,48 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<OrderData> getAllOrdersByVendorId(String vendorid) {
-        log.info("S: Get all the Orders Based on the VendorId({})", vendorid);
-        return orderRepository.findByOrderedItemsProductVendorId(vendorid);
+    public List<OrderResponse> getAllOrdersByVendorId() {
+
+        String vendorId = userService.findByUserId();
+
+        log.info("S: Get all Orders for Vendor({})", vendorId);
+
+        List<OrderData> orders = orderRepository
+                .findByOrderedItemsProductVendorId(vendorId);
+
+        return orders.stream()
+                .map(order -> orderMapper.toResponse(order, vendorId))
+                .toList();
     }
 
     @Override
-    public List<OrderData> getAllOrderByOrderStatus(OrderStatus orderstatus) {
-        log.info("S: Get all Orders By OrderStatus with a status of {}", orderstatus);
-        return orderRepository.findAllByOrderStatus(orderstatus);
+    public List<OrderResponse> getAllOrderByOrderStatus(OrderStatus orderStatus) {
+
+        String vendorId = userService.findByUserId();
+
+        log.info("S: Get all Orders for Vendor({}) with status {}", vendorId, orderStatus);
+
+        List<OrderData> orders = orderRepository
+                .findByVendorAndStatus(vendorId, orderStatus);
+
+        return orders.stream()
+                .map(order -> orderMapper.toResponse(order, vendorId))
+                .toList();
     }
+
+    @Override
+    public void updateOrderStatusById(String orderId, OrderStatus orderStatus) {
+        Optional<OrderData> order = orderRepository.findById(orderId); // <-- use String directly
+        if (order.isEmpty()) {
+            throw new RuntimeException("No Order found with orderId: " + orderId);
+        }
+
+        OrderData orderData = order.get();
+        orderData.setOrderStatus(orderStatus);
+        orderRepository.save(orderData);
+    }
+
+
+
 
 }

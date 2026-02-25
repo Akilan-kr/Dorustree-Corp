@@ -1,20 +1,24 @@
 package com.dorustree.dorustree_corp.Service.Interfaces;
 
+import com.dorustree.dorustree_corp.Dto.OrderRequest;
+import com.dorustree.dorustree_corp.Dto.OrderResponse;
 import com.dorustree.dorustree_corp.Enums.OrderStatus;
 import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 
 import java.util.List;
 
 public interface IOrderService {
-    void placeOrder(OrderData orderData);
+    void placeOrder(OrderRequest orderRequest);
 
-    OrderData getOrderOfLoginUser();
+    List<OrderData> getOrderOfLoginUser();
 
-    boolean updateOrderStatus(OrderData orderData, OrderStatus orderstatus);
+    boolean updateOrderStatus(OrderRequest orderRequest, OrderStatus orderstatus);
 
     List<OrderData> getAllOrders();
 
-    List<OrderData> getAllOrdersByVendorId(String vendorid);
+    List<OrderResponse> getAllOrdersByVendorId();
 
-    List<OrderData> getAllOrderByOrderStatus(OrderStatus orderstatus);
+    List<OrderResponse> getAllOrderByOrderStatus(OrderStatus orderstatus);
+
+    void updateOrderStatusById(String orderId, OrderStatus orderStatus);
 }

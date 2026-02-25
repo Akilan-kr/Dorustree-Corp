@@ -56,7 +56,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Get product based on ProductId  - VENDOR", description = "Returns a Product data")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("hasAnyRole('VENDOR', 'USER')")
     @GetMapping("/getproduct/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id ){
         log.info("C: Get the products by its product id called by Vendor");

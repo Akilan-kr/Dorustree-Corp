@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItems {
-    private String productVendorId;
-    private String productId;
-    private Integer productQuantity;
-    private Integer productPrice;
+public class VendorStatsDtoResponse {
+    private Long totalProducts;
+    private Integer totalSalesQuantity;
+    private Integer totalSalesAmount;
 }

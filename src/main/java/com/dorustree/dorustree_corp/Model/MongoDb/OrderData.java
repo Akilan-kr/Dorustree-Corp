@@ -1,8 +1,8 @@
 package com.dorustree.dorustree_corp.Model.MongoDb;
 
 import com.dorustree.dorustree_corp.Enums.OrderStatus;
-import com.dorustree.dorustree_corp.Dto.OrderItems;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +14,7 @@ import java.util.List;
 @Document(collection = "Order")
 @NoArgsConstructor
 @Data
+@Builder
 @AllArgsConstructor
 public class OrderData {
     @MongoId(FieldType.OBJECT_ID)
@@ -23,9 +24,8 @@ public class OrderData {
     private Integer totalPrice;
     private OrderStatus orderStatus;
 
-    public OrderData(List<OrderItems> orderedItems) {
-        this.orderedItems = orderedItems;
-    }
-
+//    public OrderData(List<OrderItems> orderedItems) {
+//        this.orderedItems = orderedItems;
+//    }
 
 }

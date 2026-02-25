@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -46,4 +47,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 
+    // Count total products for a vendor
+
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.productVendorId = :vendorId AND p.productDeleteStatus = :status")
+    Long countByVendorIdAndStatus(String vendorId, ProductDeleteStatus status);
 }

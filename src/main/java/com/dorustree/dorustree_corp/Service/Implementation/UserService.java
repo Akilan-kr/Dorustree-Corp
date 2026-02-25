@@ -1,11 +1,21 @@
 package com.dorustree.dorustree_corp.Service.Implementation;
 
+import com.dorustree.dorustree_corp.Model.MongoDb.OrderItems;
+import com.dorustree.dorustree_corp.Dto.UserResponse;
+import com.dorustree.dorustree_corp.Dto.UserRequest;
+import com.dorustree.dorustree_corp.Dto.VendorStatsDtoResponse;
+import com.dorustree.dorustree_corp.Enums.OrderStatus;
+import com.dorustree.dorustree_corp.Enums.ProductDeleteStatus;
 import com.dorustree.dorustree_corp.Enums.UserRoles;
 import com.dorustree.dorustree_corp.Enums.UserStatusForVendor;
+import com.dorustree.dorustree_corp.Mappers.UserMapper;
+import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
 import com.dorustree.dorustree_corp.Model.MySql.BlacklistToken;
+import com.dorustree.dorustree_corp.Repository.MongoDb.OrderRepository;
 import com.dorustree.dorustree_corp.Repository.MongoDb.UserRepository;
 import com.dorustree.dorustree_corp.Repository.MySql.BlacklistTokenRepository;
+import com.dorustree.dorustree_corp.Repository.MySql.ProductRepository;
 import com.dorustree.dorustree_corp.Service.Interfaces.IAuthenticationFacade;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -28,12 +38,21 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
     private final IAuthenticationFacade AuthenticationFacade;
 
     private final BlacklistTokenRepository blacklistTokenRepository;
+
+    private final UserMapper userMapper;
+
+    private final ProductRepository productRepository;
+
+    private final OrderRepository orderRepository;
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder encoder, IAuthenticationFacade AuthenticationFacade, BlacklistTokenRepository blacklistTokenRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder encoder, IAuthenticationFacade AuthenticationFacade, BlacklistTokenRepository blacklistTokenRepository, UserMapper userMapper, ProductRepository productRepository, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.AuthenticationFacade = AuthenticationFacade;
         this.blacklistTokenRepository = blacklistTokenRepository;
+        this.userMapper = userMapper;
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -60,7 +79,8 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
 
 
     @Override
-    public void addUser(UserData userData) {
+    public void addUser(UserRequest userRequest) {
+        UserData userData = userMapper.toEntity(userRequest);
         userData.setUserPassword(encoder.encode(userData.getUserPassword()));
         log.info("S: New user is register in db");
         userRepository.save(userData);
@@ -73,10 +93,32 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
     }
 
     @Override
-    public UserData getUser() {
+    public UserResponse getUser() {
         String loggedInUser = findByUserId();
-        return userRepository.findById(loggedInUser).orElseThrow(() ->
+        UserData user = userRepository.findById(loggedInUser).orElseThrow(() ->
                 new RuntimeException("User not found"));
+        return userMapper.toResponse(user);
+    }
+
+    @Override
+    public VendorStatsDtoResponse getVendorStats() {
+        String loggedInUser = findByUserId();
+        Long totalProducts = productRepository.countByVendorIdAndStatus(loggedInUser, ProductDeleteStatus.NOT_DELETED);
+
+        List<OrderData> orders = orderRepository.findByVendorAndStatus(loggedInUser, OrderStatus.Order_Received);
+        int totalQuantity = 0;
+        int totalAmount = 0;
+
+        for (OrderData order : orders) {
+            for (OrderItems item : order.getOrderedItems()) {
+                if (loggedInUser.equals(item.getProductVendorId())) {
+                    totalQuantity += item.getProductQuantity();
+                    totalAmount += item.getProductQuantity() * item.getProductPrice();
+                }
+            }
+        }
+
+        return new VendorStatsDtoResponse(totalProducts, totalQuantity, totalAmount);
     }
 
     @Override

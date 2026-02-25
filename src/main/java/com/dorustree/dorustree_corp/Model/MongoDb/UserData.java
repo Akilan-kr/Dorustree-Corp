@@ -3,19 +3,29 @@ package com.dorustree.dorustree_corp.Model.MongoDb;
 
 import com.dorustree.dorustree_corp.Enums.UserRoles;
 import com.dorustree.dorustree_corp.Enums.UserStatusForVendor;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+
+import java.time.LocalDateTime;
 
 @Document(collection = "Users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+@Builder
+@EntityListeners(AuditingEntityListener.class)
 public class UserData {
     @MongoId(FieldType.OBJECT_ID)
 //    @Id
@@ -37,6 +47,13 @@ public class UserData {
     private String userAddress;
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
     private String userPhone;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     public UserData(String userName, String userEmail, String userPassword, String userAddress, String userPhone) {
         this.userName = userName;

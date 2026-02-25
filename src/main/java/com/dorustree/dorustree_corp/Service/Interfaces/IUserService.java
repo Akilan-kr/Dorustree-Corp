@@ -1,5 +1,8 @@
 package com.dorustree.dorustree_corp.Service.Interfaces;
 
+import com.dorustree.dorustree_corp.Dto.UserResponse;
+import com.dorustree.dorustree_corp.Dto.UserRequest;
+import com.dorustree.dorustree_corp.Dto.VendorStatsDtoResponse;
 import com.dorustree.dorustree_corp.Enums.UserRoles;
 import com.dorustree.dorustree_corp.Enums.UserStatusForVendor;
 import com.dorustree.dorustree_corp.Model.MongoDb.UserData;
@@ -10,7 +13,7 @@ import java.util.List;
 
 public interface IUserService {
     String findByUserId();
-    void addUser(UserData userData);
+    void addUser(UserRequest userRequest);
 
     List<UserData> getAllUsers();
 
@@ -31,5 +34,7 @@ public interface IUserService {
 
     void logout(BlacklistToken blacklistedToken);
 
-    UserData getUser();
+    UserResponse getUser();
+
+    VendorStatsDtoResponse getVendorStats();
 }
