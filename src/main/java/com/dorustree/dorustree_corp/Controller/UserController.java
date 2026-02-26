@@ -104,7 +104,7 @@ public class UserController {
 //    @ApiResponse(responseCode = "200", description = "Successfully retrieved users")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/getusers")
-    public ResponseEntity<ApiResponse<List<UserData>>> getAllUsers(){
+    public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers(){
         log.info("C: Get all the users Details is called by the Admin");
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Getting all the users",userService.getAllUsers()));
     }
@@ -160,12 +160,23 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>(true, "Promoting the user to vendor", null));
     }
 
+    @Operation(summary = "Showing the stats of the specific vendor - VENDOR", description = "Returns vendor stats Dto response")
     @GetMapping("/vendor/stats")
     @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<ApiResponse<VendorStatsDtoResponse>> getVendorStats() {
+        log.info("C: Vendor status is called by the vendor");
         VendorStatsDtoResponse stats = userService.getVendorStats();
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiResponse<>(true, "Vendor stats fetched successfully", stats));
+    }
+
+    @Operation(summary = "Deleted the user- VENDOR", description = "Returns response status")
+    @DeleteMapping("/deleteuser/{userid}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<?>> DeleteUserById(@PathVariable String userid){
+        log.warn("C: User{} is deleted by admin", userid);
+        userService.deleteUserById(userid);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse<>(true, "User Deleted", null));
     }
 
 }

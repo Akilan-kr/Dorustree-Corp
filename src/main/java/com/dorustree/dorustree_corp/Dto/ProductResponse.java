@@ -14,6 +14,7 @@ public record ProductResponse(
         Integer productPrice,
         Integer productQuantity,
         ProductStatus productStatus,
+        String productVendorId,
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt,
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

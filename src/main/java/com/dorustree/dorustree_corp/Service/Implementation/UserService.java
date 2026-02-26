@@ -17,6 +17,7 @@ import com.dorustree.dorustree_corp.Repository.MongoDb.UserRepository;
 import com.dorustree.dorustree_corp.Repository.MySql.BlacklistTokenRepository;
 import com.dorustree.dorustree_corp.Repository.MySql.ProductRepository;
 import com.dorustree.dorustree_corp.Service.Interfaces.IAuthenticationFacade;
+import com.dorustree.dorustree_corp.Service.Interfaces.IUserService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +25,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
-public class UserService implements com.dorustree.dorustree_corp.Service.Interfaces.IUserService {
+public class UserService implements IUserService {
 
     private final UserRepository userRepository;
 
@@ -80,11 +83,24 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
 
     @Override
     public void addUser(UserRequest userRequest) {
+        if (userRequest == null) {
+            throw new IllegalArgumentException("User request cannot be null");
+        }
+
+        // Map DTO to entity
         UserData userData = userMapper.toEntity(userRequest);
+
+        // Set default values
+        userData.setUserRole(UserRoles.USER);
+        userData.setUserStatusForVendor(UserStatusForVendor.Status_None);
+        userData.setCreatedAt(LocalDateTime.now()); // safer timestamp
         userData.setUserPassword(encoder.encode(userData.getUserPassword()));
-        log.info("S: New user is register in db");
+
+        // Save user and log
         userRepository.save(userData);
+        log.info("S: New user '{}' registered with role {}", userData.getUserName(), userData.getUserRole());
     }
+
 
     @Override
     public void logout(BlacklistToken blacklistedToken) {
@@ -104,7 +120,7 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
     public VendorStatsDtoResponse getVendorStats() {
         String loggedInUser = findByUserId();
         Long totalProducts = productRepository.countByVendorIdAndStatus(loggedInUser, ProductDeleteStatus.NOT_DELETED);
-
+        log.info("S: Getting vendor stats for vendor");
         List<OrderData> orders = orderRepository.findByVendorAndStatus(loggedInUser, OrderStatus.Order_Received);
         int totalQuantity = 0;
         int totalAmount = 0;
@@ -122,10 +138,22 @@ public class UserService implements com.dorustree.dorustree_corp.Service.Interfa
     }
 
     @Override
-    public List<UserData> getAllUsers() {
-        log.info("S: Get all the users");
-        return userRepository.findAll();
+    public void deleteUserById(String userid) {
+        log.warn("S: User was deleted by Admin");
+        userRepository.deleteById(userid);
     }
+
+    @Override
+    public List<UserResponse> getAllUsers() {
+        log.info("S: Get all the users");
+
+        // Fetch all users from repository and map them to UserResponse using streams
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toResponse) // map each UserData to UserResponse
+                .toList(); // collect as a List<UserResponse>
+    }
+
 
     @Override
     public UserData getUserById(String id) {

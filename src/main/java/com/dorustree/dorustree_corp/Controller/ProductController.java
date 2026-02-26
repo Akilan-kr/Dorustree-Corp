@@ -56,7 +56,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Get product based on ProductId  - VENDOR", description = "Returns a Product data")
-    @PreAuthorize("hasAnyRole('VENDOR', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','VENDOR', 'USER')")
     @GetMapping("/getproduct/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id ){
         log.info("C: Get the products by its product id called by Vendor");
@@ -131,7 +131,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Update the status of the product with it productId - VENDOR", description = "Returns a Updated message")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','VENDOR')")
     @PutMapping("/statusofproduct/{productid}")
     public ResponseEntity<ApiResponse<?>> updateStatusOfTheProduct(@PathVariable String productid){
         log.info("C: update the product Activeness for the product");

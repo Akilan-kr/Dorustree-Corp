@@ -117,7 +117,7 @@ public class ProductService implements IProductService {
     // GET BY VENDOR
     // ================================
     @Override
-    @Cacheable(value = "productsByVendor", key = "#vendorId + '_' + #page + '_' + #size")
+//    @Cacheable(value = "productsByVendor", key = "#vendorId + '_' + #page + '_' + #size")
     public List<ProductResponse> getAllProductsUsingVendorId(int page, int size, String vendorId) {
         log.info("S: Get products by Vendor({})", vendorId);
         return productRepository.getAllByProductVendorId(PageRequest.of(page, size), vendorId)

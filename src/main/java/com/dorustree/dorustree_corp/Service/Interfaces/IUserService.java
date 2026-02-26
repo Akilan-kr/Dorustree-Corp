@@ -15,7 +15,7 @@ public interface IUserService {
     String findByUserId();
     void addUser(UserRequest userRequest);
 
-    List<UserData> getAllUsers();
+    List<UserResponse> getAllUsers();
 
     UserData getUserById(String id);
 
@@ -37,4 +37,7 @@ public interface IUserService {
     UserResponse getUser();
 
     VendorStatsDtoResponse getVendorStats();
+
+    void deleteUserById(String userid);
+
 }
