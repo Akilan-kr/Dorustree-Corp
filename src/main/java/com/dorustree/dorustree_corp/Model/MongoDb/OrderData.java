@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Document(collection = "Order")
@@ -23,6 +25,7 @@ public class OrderData {
     private List<OrderItems> orderedItems;
     private Integer totalPrice;
     private OrderStatus orderStatus;
+    Instant orderDate;
 
 //    public OrderData(List<OrderItems> orderedItems) {
 //        this.orderedItems = orderedItems;

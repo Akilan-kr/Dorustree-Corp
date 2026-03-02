@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -20,5 +22,7 @@ public interface OrderRepository extends MongoRepository<OrderData, String> {
     @Query("{'orderedItems.productVendorId': ?0, 'orderStatus': ?1}")
     List<OrderData> findByVendorAndStatus(String loggedInUser, OrderStatus orderStatus);
 
+    long countByOrderStatus(OrderStatus orderStatus); // "Order_Received", etc.
+    List<OrderData> findByOrderStatusAndOrderDateBetween(OrderStatus orderStatus, Instant orderDate, Instant orderDate2);
 
 }

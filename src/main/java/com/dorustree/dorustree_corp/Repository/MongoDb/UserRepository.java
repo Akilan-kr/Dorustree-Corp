@@ -18,4 +18,7 @@ public interface UserRepository extends MongoRepository<UserData, String> {
 
     List<UserData> findAllByUserStatusForVendor(UserStatusForVendor userstatusforvendor);
 
+    long countByUserRole(UserRoles userRole); // "VENDOR" or "CUSTOMER"
+    long countByUserStatusForVendor(UserStatusForVendor userStatusForVendor); // "Status_Pending"
+
 }

@@ -48,6 +48,7 @@ public class OrderMapper {
                 order.getId(),
                 order.getOrderedUserId(),
                 vendorItems,
+                order.getOrderDate(),
                 vendorTotal,
                 order.getOrderStatus()
         );
