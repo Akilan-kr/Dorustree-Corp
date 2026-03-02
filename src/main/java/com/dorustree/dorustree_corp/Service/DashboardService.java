@@ -2,10 +2,7 @@ package com.dorustree.dorustree_corp.Service;
 
 import com.dorustree.dorustree_corp.Dto.DashboardDTO;
 
-import com.dorustree.dorustree_corp.Enums.OrderStatus;
-import com.dorustree.dorustree_corp.Enums.ProductStatus;
-import com.dorustree.dorustree_corp.Enums.UserRoles;
-import com.dorustree.dorustree_corp.Enums.UserStatusForVendor;
+import com.dorustree.dorustree_corp.Enums.*;
 import com.dorustree.dorustree_corp.Model.MongoDb.OrderData;
 import com.dorustree.dorustree_corp.Repository.MongoDb.OrderRepository;
 import com.dorustree.dorustree_corp.Repository.MongoDb.UserRepository;
@@ -41,10 +38,26 @@ public class DashboardService {
         dto.setTotalVendors(userRepository.countByUserRole(UserRoles.VENDOR));
         dto.setPendingVendorRequests(userRepository.countByUserStatusForVendor(UserStatusForVendor.Status_Pending));
 
-        // Products
-        dto.setTotalProducts(productRepository.count());
-        dto.setActiveProducts(productRepository.countByProductStatus(ProductStatus.ACTIVE));
-        dto.setInactiveProducts(productRepository.countByProductStatus(ProductStatus.INACTIVE));
+        // Total products (excluding deleted)
+        dto.setTotalProducts(
+                productRepository.countByProductDeleteStatus(ProductDeleteStatus.NOT_DELETED)
+        );
+
+        // Active products
+        dto.setActiveProducts(
+                productRepository.countByProductStatusAndProductDeleteStatus(
+                        ProductStatus.ACTIVE,
+                        ProductDeleteStatus.NOT_DELETED
+                )
+        );
+
+        // Inactive products
+        dto.setInactiveProducts(
+                productRepository.countByProductStatusAndProductDeleteStatus(
+                        ProductStatus.INACTIVE,
+                        ProductDeleteStatus.NOT_DELETED
+                )
+        );
 
         // Orders
         dto.setTotalOrders(orderRepository.count());
@@ -58,7 +71,7 @@ public class DashboardService {
 
         double revenueTotal = orderRepository
                 .findByOrderStatusAndOrderDateBetween(OrderStatus.Order_Received,
-                        LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+                        LocalDate.of(2026, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant(),
                         Instant.now())
                 .stream().mapToDouble(OrderData::getTotalPrice).sum();
 

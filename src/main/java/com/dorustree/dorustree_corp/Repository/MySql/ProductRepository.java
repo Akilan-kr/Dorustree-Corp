@@ -52,5 +52,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT COUNT(p) FROM Product p WHERE p.productVendorId = :vendorId AND p.productDeleteStatus = :status")
     Long countByVendorIdAndStatus(String vendorId, ProductDeleteStatus status);
 
-    long countByProductStatus(ProductStatus productStatus); // ACTIVE / INACTIVE
+    long countByProductDeleteStatus(ProductDeleteStatus deleteStatus);
+
+    long countByProductStatusAndProductDeleteStatus(
+            ProductStatus productStatus,
+            ProductDeleteStatus deleteStatus
+    );// ACTIVE / INACTIVE
 }
