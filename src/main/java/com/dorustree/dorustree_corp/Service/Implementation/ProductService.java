@@ -120,10 +120,14 @@ public class ProductService implements IProductService {
 //    @Cacheable(value = "productsByVendor", key = "#vendorId + '_' + #page + '_' + #size")
     public List<ProductResponse> getAllProductsUsingVendorId(int page, int size, String vendorId) {
         log.info("S: Get products by Vendor({})", vendorId);
-        return productRepository.getAllByProductVendorId(PageRequest.of(page, size), vendorId)
-                .stream()
-                .map(productMapper::toResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository
+                .findAllByProductVendorIdAndProductDeleteStatus(
+                        vendorId,
+                        ProductDeleteStatus.NOT_DELETED,
+                        pageable
+                )
+                .map(productMapper::toResponse).toList();
     }
 
     @Override
